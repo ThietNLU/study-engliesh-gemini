@@ -1,7 +1,5 @@
 # Class Diagram - Study English Vocabulary App
 
-## Sơ đồ lớp của ứng dụng học từ vựng tiếng Anh với AI
-
 ```mermaid
 classDiagram
     %% Main App Component
@@ -414,10 +412,6 @@ classDiagram
 
 ## Patterns sử dụng
 
-- **Custom Hooks Pattern**: Tách logic ra khỏi UI components
-- **Service Layer Pattern**: Tách biệt business logic và data access
 - **Strategy Pattern**: StorageService có thể switch giữa localStorage và Firestore
 - **Observer Pattern**: React hooks để theo dõi state changes
 - **Facade Pattern**: StorageService che giấu complexity của storage backends
-
-Sơ đồ này thể hiện kiến trúc modular và scalable của ứng dụng, với separation of concerns rõ ràng giữa UI, business logic, và data layer.
