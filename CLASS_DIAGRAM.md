@@ -420,8 +420,6 @@ classDiagram
 - **Observer Pattern**: React hooks để theo dõi state changes
 - **Facade Pattern**: StorageService che giấu complexity của storage backends
 
-Sơ đồ này thể hiện kiến trúc modular và scalable của ứng dụng, với separation of concerns rõ ràng giữa UI, business logic, và data layer.
-
 ## Data Flow Diagram - Luồng dữ liệu
 
 ### Sơ đồ luồng dữ liệu của ứng dụng Study English
@@ -716,4 +714,3 @@ stateDiagram-v2
     Exporting --> Loaded : Export completed
 ```
 
-Sơ đồ này minh họa luồng dữ liệu chi tiết, từ user interactions đến data persistence, bao gồm cả AI integration và cross-platform synchronization.
