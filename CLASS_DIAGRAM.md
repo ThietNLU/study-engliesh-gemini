@@ -1,7 +1,5 @@
 # Class Diagram - Study English Vocabulary App
 
-## Sơ đồ lớp của ứng dụng học từ vựng tiếng Anh với AI
-
 ```mermaid
 classDiagram
     %% Main App Component
