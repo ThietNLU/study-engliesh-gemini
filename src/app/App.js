@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 // Feature imports
-import { StudyMode } from '../features/flashcard';
+import { StudyMode, FlashcardMode, FlashcardManager, FlashcardStats } from '../features/flashcard';
 import { QuizMode } from '../features/quiz';
 import {
   AddWordMode,
   ManageMode,
   DatabaseManager,
   Statistics,
-  useVocabulary,
-  useFavorites,
 } from '../features/vocab';
 import { AIMode, geminiService } from '../features/ai';
 
@@ -20,49 +18,86 @@ import {
   ModeSelector,
   Footer,
   EmptyState,
-  useApiKey,
   checkDuplicate,
   filterVocabulary,
 } from '../shared';
 
+// Store imports
+import {
+  useLearningStore,
+  useUIStore,
+  useDataStore,
+  useFlashcardStore,
+} from '../shared/stores';
+
+// New components
+import NotificationToast from '../shared/ui/NotificationToast';
+import ConfirmDialog from '../shared/ui/ConfirmDialog';
+
 const EnglishVocabApp = () => {
-  // State management
-  const [currentMode, setCurrentMode] = useState('home');
-  const [currentCard, setCurrentCard] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
-  const [userAnswer, setUserAnswer] = useState('');
-  const [quizType, setQuizType] = useState('meaning');
-  const [accent, setAccent] = useState('us');
-  const [editingWord, setEditingWord] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [aiRequest, setAiRequest] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showApiSettings, setShowApiSettings] = useState(false);
+  // Zustand stores
+  const learningStore = useLearningStore();
+  const uiStore = useUIStore();
+  const dataStore = useDataStore();
 
-  // Form state for adding new words
-  const [newWord, setNewWord] = useState({
-    english: '',
-    vietnamese: '',
-    pronunciation_us: '',
-    pronunciation_uk: '',
-    category: 'nouns',
-    definition: '',
-    example: '',
-    level: 'A1',
-  });
+  // Destructure commonly used state and actions
+  const {
+    currentMode,
+    editingWord,
+    searchTerm,
+    aiRequest,
+    isLoading,
+    showApiSettings,
+    newWord,
+    accent,
+    setCurrentMode,
+    setEditingWord,
+    setSearchTerm,
+    setAiRequest,
+    setIsLoading,
+    setShowApiSettings,
+    setNewWord,
+    setAccent,
+    showNotification,
+    setLoading,
+  } = uiStore;
 
-  // Custom hooks
+  const {
+    score,
+    currentCard,
+    showAnswer,
+    userAnswer,
+    quizType,
+    setScore,
+    setCurrentCard,
+    setShowAnswer,
+    setUserAnswer,
+    setQuizType,
+    nextCard,
+    prevCard,
+    resetQuiz,
+    startStudySession,
+  } = learningStore;
+
   const {
     vocabulary,
+    favorites,
+    apiKey,
     addWord,
     updateWord,
     deleteWord,
     addWordsFromAI,
     refreshVocabulary,
-  } = useVocabulary();
-  const { favorites, toggleFavorite } = useFavorites();
-  const { apiKey, setApiKey } = useApiKey();
+    toggleFavorite,
+    setApiKey,
+    initializeData,
+    getFilteredVocabulary,
+  } = dataStore;
+
+  // Initialize data on app load
+  useEffect(() => {
+    initializeData();
+  }, [initializeData]);
 
   // Watch vocabulary changes and reset to home when it becomes empty
   useEffect(() => {
@@ -76,14 +111,10 @@ const EnglishVocabApp = () => {
     }
   }, [vocabulary.length, currentMode]);
 
-  // Computed values
-  const filteredVocabulary = filterVocabulary(vocabulary, searchTerm);
-  const currentWord = vocabulary[currentCard];
-
   // Event handlers
   const addNewWord = () => {
     if (!newWord.english.trim() || !newWord.vietnamese.trim()) {
-      alert('Hãy nhập ít nhất từ tiếng Anh và nghĩa tiếng Việt');
+      showNotification('warning', 'Hãy nhập ít nhất từ tiếng Anh và nghĩa tiếng Việt');
       return;
     }
 
@@ -116,31 +147,11 @@ const EnglishVocabApp = () => {
       setCurrentMode('home');
     }
 
-    alert('Đã thêm từ mới thành công!');
-  };
-
-  const handleDeleteWord = id => {
-    if (confirm('Bạn có chắc muốn xóa từ này?')) {
-      deleteWord(id);
-      if (currentCard >= vocabulary.length - 1) {
-        setCurrentCard(0);
-      }
-    }
-  };
-
-  const nextCard = () => {
-    setCurrentCard(prev => (prev + 1) % vocabulary.length);
-    setShowAnswer(false);
-    setUserAnswer('');
-  };
-
-  const prevCard = () => {
-    setCurrentCard(prev => (prev - 1 + vocabulary.length) % vocabulary.length);
-    setShowAnswer(false);
-    setUserAnswer('');
+    showNotification('success', 'Đã thêm từ mới thành công!');
   };
 
   const checkAnswer = () => {
+    const currentWord = vocabulary[currentCard];
     const isCorrect =
       quizType === 'meaning'
         ? userAnswer
@@ -154,18 +165,16 @@ const EnglishVocabApp = () => {
             .includes(currentWord.english.toLowerCase()) ||
           currentWord.english.toLowerCase().includes(userAnswer.toLowerCase());
 
-    setScore(prev => ({
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1,
-    }));
+    setScore({
+      correct: score.correct + (isCorrect ? 1 : 0),
+      total: score.total + 1,
+    });
     setShowAnswer(true);
-  };
-
-  const resetQuiz = () => {
-    setScore({ correct: 0, total: 0 });
-    setCurrentCard(0);
-    setShowAnswer(false);
-    setUserAnswer('');
+    
+    // Update learning progress
+    if (currentWord) {
+      learningStore.updateWordProgress(currentWord.id, isCorrect);
+    }
   };
 
   const generateVocabularyWithAI = async () => {
@@ -197,16 +206,49 @@ const EnglishVocabApp = () => {
         setCurrentMode('home');
       }
 
-      alert(
-        `✅ Đã thêm ${aiWords.length} từ vựng mới từ AI!\n\nCác từ mới: ${aiWords.map(w => w.english).join(', ')}`
+      showNotification('success', 
+        `✅ Đã thêm ${aiWords.length} từ vựng mới từ AI! Các từ mới: ${aiWords.map(w => w.english).join(', ')}`
       );
     } catch (error) {
       console.error('AI Generation Error:', error);
-      alert(
-        `❌ ${error.message}\n\n💡 Gợi ý:\n- Kiểm tra API key Gemini\n- Kiểm tra kết nối internet\n- Thử yêu cầu đơn giản hơn`
+      showNotification('error', 
+        `❌ ${error.message}. Gợi ý: Kiểm tra API key Gemini và kết nối internet`
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Computed values
+  const currentWord = vocabulary[currentCard];
+  const filteredVocabulary = getFilteredVocabulary(searchTerm);
+
+  // Handle word operations with notifications
+  const handleAddWord = async (wordData) => {
+    try {
+      await addWord(wordData);
+      showNotification('success', 'Đã thêm từ vựng mới thành công!');
+      setNewWord({
+        english: '',
+        vietnamese: '',
+        pronunciation_us: '',
+        pronunciation_uk: '',
+        category: 'nouns',
+        definition: '',
+        example: '',
+        level: 'A1',
+      });
+    } catch (error) {
+      showNotification('error', `Lỗi khi thêm từ: ${error.message}`);
+    }
+  };
+
+  const handleDeleteWord = async (id) => {
+    try {
+      await deleteWord(id);
+      showNotification('success', 'Đã xóa từ vựng thành công!');
+    } catch (error) {
+      showNotification('error', `Lỗi khi xóa từ: ${error.message}`);
     }
   };
 
@@ -223,7 +265,7 @@ const EnglishVocabApp = () => {
         <ModeSelector
           currentMode={currentMode}
           setCurrentMode={setCurrentMode}
-          resetQuiz={resetQuiz}
+          resetQuiz={() => resetQuiz()}
         />
 
         {/* Home Page */}
@@ -238,18 +280,16 @@ const EnglishVocabApp = () => {
         )}
 
         {/* Study Mode */}
-        {currentMode === 'study' && (
-          <StudyMode
-            currentWord={currentWord}
-            currentCard={currentCard}
-            vocabulary={vocabulary}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-            accent={accent}
-            nextCard={nextCard}
-            prevCard={prevCard}
-          />
-        )}
+        {currentMode === 'study' && <StudyMode />}
+
+        {/* Flashcard Study Mode */}
+        {currentMode === 'flashcard' && <FlashcardMode />}
+
+        {/* Flashcard Manager Mode */}
+        {currentMode === 'flashcard-manager' && <FlashcardManager />}
+
+        {/* Flashcard Statistics Mode */}
+        {currentMode === 'flashcard-stats' && <FlashcardStats />}
 
         {/* Quiz Mode */}
         {currentMode === 'quiz' && (
@@ -262,7 +302,7 @@ const EnglishVocabApp = () => {
             setUserAnswer={setUserAnswer}
             showAnswer={showAnswer}
             checkAnswer={checkAnswer}
-            nextCard={nextCard}
+            nextCard={() => nextCard(vocabulary.length)}
             accent={accent}
           />
         )}
@@ -272,7 +312,7 @@ const EnglishVocabApp = () => {
           <AddWordMode
             newWord={newWord}
             setNewWord={setNewWord}
-            addNewWord={addNewWord}
+            addNewWord={handleAddWord}
           />
         )}
 
@@ -319,6 +359,10 @@ const EnglishVocabApp = () => {
         )}
 
         <Footer />
+
+        {/* Global UI Components */}
+        <NotificationToast />
+        <ConfirmDialog />
       </div>
     </div>
   );

@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Volume2, Star } from 'lucide-react';
 import { speak } from '../../../shared/utils/helpers';
+import { useLearningStore, useUIStore, useDataStore } from '../../../shared/stores';
 
-const StudyMode = ({
-  currentWord,
-  currentCard,
-  vocabulary,
-  favorites,
-  toggleFavorite,
-  accent,
-  nextCard,
-  prevCard,
-}) => {
+const StudyMode = () => {
+  // Use stores instead of props
+  const { currentCard, startStudySession } = useLearningStore();
+  const { accent } = useUIStore();
+  const { vocabulary, favorites, toggleFavorite } = useDataStore();
+  
+  // Get current word from vocabulary
+  const currentWord = vocabulary[currentCard];
+
+  // Start study session when component mounts
+  useEffect(() => {
+    startStudySession();
+  }, [startStudySession]);
+
   if (!currentWord) return null;
 
   return (
@@ -116,7 +121,7 @@ const StudyMode = ({
       {/* Navigation */}
       <div className='flex justify-between items-center'>
         <button
-          onClick={prevCard}
+          onClick={() => useLearningStore.getState().prevCard(vocabulary.length)}
           className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-all'
         >
           ← Trước
@@ -125,7 +130,7 @@ const StudyMode = ({
           {currentCard + 1} / {vocabulary.length}
         </span>
         <button
-          onClick={nextCard}
+          onClick={() => useLearningStore.getState().nextCard(vocabulary.length)}
           className='bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-all'
         >
           Tiếp →

@@ -7,6 +7,9 @@ import {
   Settings,
   Sparkles,
   Database,
+  CreditCard,
+  BarChart3,
+  FolderOpen,
 } from 'lucide-react';
 
 const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
@@ -22,6 +25,24 @@ const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
       label: 'Học từ',
       icon: BookOpen,
       action: () => setCurrentMode('study'),
+    },
+    {
+      id: 'flashcard',
+      label: 'Flashcard',
+      icon: CreditCard,
+      action: () => setCurrentMode('flashcard'),
+    },
+    {
+      id: 'flashcard-manager',
+      label: 'Quản lý thẻ',
+      icon: FolderOpen,
+      action: () => setCurrentMode('flashcard-manager'),
+    },
+    {
+      id: 'flashcard-stats',
+      label: 'Thống kê',
+      icon: BarChart3,
+      action: () => setCurrentMode('flashcard-stats'),
     },
     {
       id: 'quiz',

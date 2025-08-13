@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { getCategoryStats } from '../utils/helpers';
 import { categories } from '../../features/vocab/data/initialVocabulary';
+import StudyProgressWidget from './StudyProgressWidget';
 
 const HomePage = ({
   vocabulary,
@@ -251,47 +252,50 @@ const HomePage = ({
           </div>
         </div>
 
-        {/* Level Distribution */}
-        <div className='bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100'>
-          <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-lg sm:text-xl font-bold text-gray-800'>
-              Phân bố cấp độ
-            </h3>
-            <BarChart3 className='w-4 h-4 sm:w-5 sm:h-5 text-gray-500' />
-          </div>
+        {/* Study Progress Widget */}
+        <StudyProgressWidget />
+      </div>
+
+      {/* Level Distribution */}
+      <div className='bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100'>
+        <div className='flex items-center justify-between mb-4'>
+          <h3 className='text-lg sm:text-xl font-bold text-gray-800'>
+            Phân bố cấp độ
+          </h3>
+          <BarChart3 className='w-4 h-4 sm:w-5 sm:h-5 text-gray-500' />
+        </div>
           <div className='space-y-3'>
-            {Object.entries(levelStats).map(([level, count]) => {
-              const percentage = Math.round((count / totalWords) * 100);
-              return (
-                <div key={level} className='space-y-1'>
-                  <div className='flex justify-between text-sm'>
-                    <span className='font-medium text-gray-700'>{level}</span>
-                    <span className='text-gray-500'>
-                      {count} từ ({percentage}%)
-                    </span>
-                  </div>
-                  <div className='w-full bg-gray-200 rounded-full h-2'>
-                    <div
-                      className={`h-2 rounded-full ${
-                        level === 'A1'
-                          ? 'bg-green-400'
-                          : level === 'A2'
-                            ? 'bg-green-500'
-                            : level === 'B1'
-                              ? 'bg-yellow-400'
-                              : level === 'B2'
-                                ? 'bg-orange-400'
-                                : level === 'C1'
-                                  ? 'bg-red-400'
-                                  : 'bg-purple-400'
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
+          {Object.entries(levelStats).map(([level, count]) => {
+            const percentage = Math.round((count / totalWords) * 100);
+            return (
+              <div key={level} className='space-y-1'>
+                <div className='flex justify-between text-sm'>
+                  <span className='font-medium text-gray-700'>{level}</span>
+                  <span className='text-gray-500'>
+                    {count} từ ({percentage}%)
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <div className='w-full bg-gray-200 rounded-full h-2'>
+                  <div
+                    className={`h-2 rounded-full ${
+                      level === 'A1'
+                        ? 'bg-green-400'
+                        : level === 'A2'
+                          ? 'bg-green-500'
+                          : level === 'B1'
+                            ? 'bg-yellow-400'
+                            : level === 'B2'
+                              ? 'bg-orange-400'
+                              : level === 'C1'
+                                ? 'bg-red-400'
+                                : 'bg-purple-400'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -323,8 +327,6 @@ const HomePage = ({
           </div>
         </div>
       </div>
-
-      {/* Quick Stats */}
     </div>
   );
 };
