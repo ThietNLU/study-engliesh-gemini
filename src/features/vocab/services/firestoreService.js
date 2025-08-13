@@ -14,7 +14,7 @@ import {
   serverTimestamp,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../../../shared/config/firebase';
 
 // Collection names
 const COLLECTIONS = {

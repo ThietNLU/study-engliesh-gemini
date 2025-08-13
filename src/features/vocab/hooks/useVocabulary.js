@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import storageService from '../services/storageService';
+import storageService from '../../../shared/services/storageService';
 import { initialVocabulary } from '../data/initialVocabulary';
 
 export const useVocabulary = () => {

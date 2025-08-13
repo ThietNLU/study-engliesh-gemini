@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCategories } from '../utils/helpers';
+import { getCategories } from '../../../shared/utils/helpers';
 // import { categories } from '../data/initialVocabulary';
 
 const Statistics = ({ vocabulary, favorites }) => {

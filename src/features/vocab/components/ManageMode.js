@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Edit3, Trash2, Save, X, Star, Volume2, Filter } from 'lucide-react';
-import { speak, getCategoryInfo } from '../utils/helpers';
+import { speak, getCategoryInfo } from '../../../shared/utils/helpers';
 import { categories } from '../data/initialVocabulary';
 
 const ManageMode = ({

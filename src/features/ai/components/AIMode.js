@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Brain, Settings, CheckCircle } from 'lucide-react';
-import { testGeminiConnection } from '../utils/apiTest';
+import { testGeminiConnection } from '../../../shared/utils/apiTest';
 
 const AIMode = ({
   aiRequest,

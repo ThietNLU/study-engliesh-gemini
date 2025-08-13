@@ -1,6 +1,6 @@
 import React from 'react';
 import { Volume2 } from 'lucide-react';
-import { speak } from '../utils/helpers';
+import { speak } from '../../../shared/utils/helpers';
 
 const QuizMode = ({
   currentWord,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import geminiService from '../services/geminiService';
-import { useVocabulary } from '../hooks/useVocabulary';
+import { useVocabulary } from '../../vocab/hooks/useVocabulary';
 
 const VocabularyGenerator = () => {
   const [apiKey, setApiKey] = useState('');

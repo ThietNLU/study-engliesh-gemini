@@ -15,7 +15,7 @@
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-        "prepare": "husky"
+    "prepare": "husky"
   },
   "keywords": [
     "english",

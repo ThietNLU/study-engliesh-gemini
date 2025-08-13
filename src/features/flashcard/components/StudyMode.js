@@ -1,6 +1,6 @@
 import React from 'react';
 import { Volume2, Star } from 'lucide-react';
-import { speak } from '../utils/helpers';
+import { speak } from '../../../shared/utils/helpers';
 
 const StudyMode = ({
   currentWord,

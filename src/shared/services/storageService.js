@@ -4,7 +4,7 @@ import { storage as localStorageHelper } from '../utils/helpers';
 let vocabularyService, favoritesService, userSettingsService, migrationService;
 
 try {
-  const firestoreServices = require('./firestoreService');
+  const firestoreServices = require('../../features/vocab/services/firestoreService');
   vocabularyService = firestoreServices.vocabularyService;
   favoritesService = firestoreServices.favoritesService;
   userSettingsService = firestoreServices.userSettingsService;

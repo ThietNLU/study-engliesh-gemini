@@ -10,7 +10,7 @@ import {
   // CheckCircle,
   // RefreshCw,
 } from 'lucide-react';
-import storageService from '../services/storageService';
+import storageService from '../../../shared/services/storageService';
 
 const DatabaseManager = ({ onDataCleared }) => {
   const [stats, setStats] = useState({

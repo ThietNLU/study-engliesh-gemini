@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 
-// Hooks
-import { useVocabulary } from './hooks/useVocabulary';
-import { useFavorites } from './hooks/useFavorites';
-import { useApiKey } from './hooks/useApiKey';
+// Feature imports
+import { StudyMode } from '../features/flashcard';
+import { QuizMode } from '../features/quiz';
+import {
+  AddWordMode,
+  ManageMode,
+  DatabaseManager,
+  Statistics,
+  useVocabulary,
+  useFavorites,
+} from '../features/vocab';
+import { AIMode, geminiService } from '../features/ai';
 
-// Components
-import Header from './components/Header';
-import HomePage from './components/HomePage';
-import ModeSelector from './components/ModeSelector';
-import StudyMode from './components/StudyMode';
-import QuizMode from './components/QuizMode';
-import AddWordMode from './components/AddWordMode';
-import AIMode from './components/AIMode';
-import ManageMode from './components/ManageMode';
-import DatabaseManager from './components/DatabaseManager';
-import Statistics from './components/Statistics';
-import Footer from './components/Footer';
-import EmptyState from './components/EmptyState';
-
-// Services
-import geminiService from './services/geminiService';
-
-// Utils
-import { checkDuplicate, filterVocabulary } from './utils/helpers';
+// Shared imports
+import {
+  Header,
+  HomePage,
+  ModeSelector,
+  Footer,
+  EmptyState,
+  useApiKey,
+  checkDuplicate,
+  filterVocabulary,
+} from '../shared';
 
 const EnglishVocabApp = () => {
   // State management

@@ -13,6 +13,7 @@ import {
   // TrendingUp,
 } from 'lucide-react';
 import { getCategoryStats } from '../utils/helpers';
+import { categories } from '../../features/vocab/data/initialVocabulary';
 
 const HomePage = ({
   vocabulary,
@@ -21,20 +22,23 @@ const HomePage = ({
   score,
   currentWord,
 }) => {
-  const totalWords = vocabulary.length;
+  // Defensive programming: ensure vocabulary is an array
+  const safeVocabulary = vocabulary || [];
+
+  const totalWords = safeVocabulary.length;
   const favoriteCount = favorites.size;
   const accuracyRate =
     score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
 
   // Quick stats
-  const _categoryStats = getCategoryStats(vocabulary);
+  const _categoryStats = getCategoryStats(safeVocabulary, categories);
 
-  const levelStats = vocabulary.reduce((acc, word) => {
+  const levelStats = safeVocabulary.reduce((acc, word) => {
     acc[word.level] = (acc[word.level] || 0) + 1;
     return acc;
   }, {});
 
-  const recentWords = vocabulary
+  const recentWords = safeVocabulary
     .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
     .slice(0, 5);
 
