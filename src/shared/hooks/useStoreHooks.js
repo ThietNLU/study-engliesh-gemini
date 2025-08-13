@@ -61,14 +61,8 @@ export const useFavoritesData = () => {
 
 // Custom hook thay thế useApiKey cũ
 export const useApiKeyData = () => {
-  const {
-    apiKey,
-    isLoading,
-    error,
-    setApiKey,
-    loadApiKey,
-    clearError,
-  } = useDataStore();
+  const { apiKey, isLoading, error, setApiKey, loadApiKey, clearError } =
+    useDataStore();
 
   // Auto-load API key on mount
   useEffect(() => {
@@ -85,10 +79,12 @@ export const useApiKeyData = () => {
 };
 
 // Hook để quản lý filtered vocabulary
-export const useFilteredVocabulary = (searchTerm) => {
-  const getFilteredVocabulary = useDataStore(state => state.getFilteredVocabulary);
+export const useFilteredVocabulary = searchTerm => {
+  const getFilteredVocabulary = useDataStore(
+    state => state.getFilteredVocabulary
+  );
   const vocabulary = useDataStore(state => state.vocabulary);
-  
+
   return getFilteredVocabulary(searchTerm);
 };
 
@@ -97,6 +93,6 @@ export const useVocabularyStats = () => {
   const getVocabularyStats = useDataStore(state => state.getVocabularyStats);
   const vocabulary = useDataStore(state => state.vocabulary);
   const favorites = useDataStore(state => state.favorites);
-  
+
   return getVocabularyStats();
 };

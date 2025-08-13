@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 
 // Feature imports
-import { StudyMode, FlashcardMode, FlashcardManager, FlashcardStats } from '../features/flashcard';
+import {
+  StudyMode,
+  FlashcardMode,
+  FlashcardManager,
+  FlashcardStats,
+} from '../features/flashcard';
 import { QuizMode } from '../features/quiz';
 import {
   AddWordMode,
@@ -114,7 +119,10 @@ const EnglishVocabApp = () => {
   // Event handlers
   const addNewWord = () => {
     if (!newWord.english.trim() || !newWord.vietnamese.trim()) {
-      showNotification('warning', 'Hãy nhập ít nhất từ tiếng Anh và nghĩa tiếng Việt');
+      showNotification(
+        'warning',
+        'Hãy nhập ít nhất từ tiếng Anh và nghĩa tiếng Việt'
+      );
       return;
     }
 
@@ -170,7 +178,7 @@ const EnglishVocabApp = () => {
       total: score.total + 1,
     });
     setShowAnswer(true);
-    
+
     // Update learning progress
     if (currentWord) {
       learningStore.updateWordProgress(currentWord.id, isCorrect);
@@ -206,12 +214,14 @@ const EnglishVocabApp = () => {
         setCurrentMode('home');
       }
 
-      showNotification('success', 
+      showNotification(
+        'success',
         `✅ Đã thêm ${aiWords.length} từ vựng mới từ AI! Các từ mới: ${aiWords.map(w => w.english).join(', ')}`
       );
     } catch (error) {
       console.error('AI Generation Error:', error);
-      showNotification('error', 
+      showNotification(
+        'error',
         `❌ ${error.message}. Gợi ý: Kiểm tra API key Gemini và kết nối internet`
       );
     } finally {
@@ -224,7 +234,7 @@ const EnglishVocabApp = () => {
   const filteredVocabulary = getFilteredVocabulary(searchTerm);
 
   // Handle word operations with notifications
-  const handleAddWord = async (wordData) => {
+  const handleAddWord = async wordData => {
     try {
       await addWord(wordData);
       showNotification('success', 'Đã thêm từ vựng mới thành công!');
@@ -243,7 +253,7 @@ const EnglishVocabApp = () => {
     }
   };
 
-  const handleDeleteWord = async (id) => {
+  const handleDeleteWord = async id => {
     try {
       await deleteWord(id);
       showNotification('success', 'Đã xóa từ vựng thành công!');

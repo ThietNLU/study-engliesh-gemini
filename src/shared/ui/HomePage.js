@@ -264,7 +264,7 @@ const HomePage = ({
           </h3>
           <BarChart3 className='w-4 h-4 sm:w-5 sm:h-5 text-gray-500' />
         </div>
-          <div className='space-y-3'>
+        <div className='space-y-3'>
           {Object.entries(levelStats).map(([level, count]) => {
             const percentage = Math.round((count / totalWords) * 100);
             return (

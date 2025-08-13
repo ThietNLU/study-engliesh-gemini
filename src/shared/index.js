@@ -12,12 +12,12 @@ export { default as ConfirmDialog } from './ui/ConfirmDialog';
 
 // Shared hooks
 export { useApiKey } from './hooks/useApiKey';
-export { 
-  useVocabularyData, 
-  useFavoritesData, 
+export {
+  useVocabularyData,
+  useFavoritesData,
   useApiKeyData,
   useFilteredVocabulary,
-  useVocabularyStats 
+  useVocabularyStats,
 } from './hooks/useStoreHooks';
 
 // Shared services

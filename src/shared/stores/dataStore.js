@@ -10,26 +10,26 @@ export const useDataStore = create(
     vocabulary: [],
     favorites: new Set(),
     apiKey: '',
-    
+
     // Loading and error states
     isLoading: false,
     error: null,
-    
+
     // Data operations
-    
+
     // Vocabulary operations
     loadVocabulary: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const savedVocab = await storageService.vocabulary.getAll();
-        
+
         if (savedVocab.length > 0) {
           set({ vocabulary: savedVocab });
         } else {
           // Check if this is first time use
           const isFirstTime = await storageService.migration.isFirstTimeUse();
-          
+
           if (isFirstTime) {
             // First time use - initialize with sample data
             set({ vocabulary: initialVocabulary });
@@ -46,14 +46,14 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
-    addWord: async (newWord) => {
+
+    addWord: async newWord => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const wordToAdd = await storageService.vocabulary.add(newWord);
-        set((state) => ({
-          vocabulary: [...state.vocabulary, wordToAdd]
+        set(state => ({
+          vocabulary: [...state.vocabulary, wordToAdd],
         }));
         return wordToAdd;
       } catch (err) {
@@ -64,16 +64,16 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     updateWord: async (id, updatedWord) => {
       set({ isLoading: true, error: null });
-      
+
       try {
         await storageService.vocabulary.update(id, updatedWord);
-        set((state) => ({
-          vocabulary: state.vocabulary.map(word => 
+        set(state => ({
+          vocabulary: state.vocabulary.map(word =>
             word.id === id ? { ...word, ...updatedWord } : word
-          )
+          ),
         }));
       } catch (err) {
         console.error('Error updating word:', err);
@@ -83,15 +83,15 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
-    deleteWord: async (id) => {
+
+    deleteWord: async id => {
       set({ isLoading: true, error: null });
-      
+
       try {
         await storageService.vocabulary.delete(id);
-        set((state) => ({
+        set(state => ({
           vocabulary: state.vocabulary.filter(word => word.id !== id),
-          favorites: new Set([...state.favorites].filter(fId => fId !== id))
+          favorites: new Set([...state.favorites].filter(fId => fId !== id)),
         }));
       } catch (err) {
         console.error('Error deleting word:', err);
@@ -101,14 +101,14 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
-    addWordsFromAI: async (aiWords) => {
+
+    addWordsFromAI: async aiWords => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const newWords = await storageService.vocabulary.addMultiple(aiWords);
-        set((state) => ({
-          vocabulary: [...state.vocabulary, ...newWords]
+        set(state => ({
+          vocabulary: [...state.vocabulary, ...newWords],
         }));
         return newWords;
       } catch (err) {
@@ -119,18 +119,18 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     refreshVocabulary: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const savedVocab = await storageService.vocabulary.getAll();
-        
+
         if (savedVocab.length > 0) {
           set({ vocabulary: savedVocab });
         } else {
           const isFirstTime = await storageService.migration.isFirstTimeUse();
-          
+
           if (isFirstTime) {
             set({ vocabulary: initialVocabulary });
             await storageService.vocabulary.addMultiple(initialVocabulary);
@@ -145,11 +145,11 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     // Favorites operations
     loadFavorites: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const savedFavorites = await storageService.favorites.getAll();
         set({ favorites: savedFavorites });
@@ -160,14 +160,14 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
-    toggleFavorite: async (id) => {
+
+    toggleFavorite: async id => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const isFavorite = await storageService.favorites.toggle(id);
-        
-        set((state) => {
+
+        set(state => {
           const newFavorites = new Set(state.favorites);
           if (isFavorite) {
             newFavorites.add(id);
@@ -176,7 +176,7 @@ export const useDataStore = create(
           }
           return { favorites: newFavorites };
         });
-        
+
         return isFavorite;
       } catch (err) {
         console.error('Error toggling favorite:', err);
@@ -186,11 +186,11 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     // API Key operations
     loadApiKey: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         const savedApiKey = await storageService.settings.getApiKey();
         set({ apiKey: savedApiKey });
@@ -201,10 +201,10 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
-    setApiKey: async (newApiKey) => {
+
+    setApiKey: async newApiKey => {
       set({ isLoading: true, error: null });
-      
+
       try {
         await storageService.settings.setApiKey(newApiKey);
         set({ apiKey: newApiKey });
@@ -216,53 +216,54 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     // Computed values
-    getFilteredVocabulary: (searchTerm) => {
+    getFilteredVocabulary: searchTerm => {
       const { vocabulary } = get();
       if (!searchTerm) return vocabulary;
-      
+
       const search = searchTerm.toLowerCase();
-      return vocabulary.filter(word =>
-        word.english.toLowerCase().includes(search) ||
-        word.vietnamese.toLowerCase().includes(search) ||
-        word.category.toLowerCase().includes(search) ||
-        (word.definition && word.definition.toLowerCase().includes(search)) ||
-        (word.example && word.example.toLowerCase().includes(search))
+      return vocabulary.filter(
+        word =>
+          word.english.toLowerCase().includes(search) ||
+          word.vietnamese.toLowerCase().includes(search) ||
+          word.category.toLowerCase().includes(search) ||
+          (word.definition && word.definition.toLowerCase().includes(search)) ||
+          (word.example && word.example.toLowerCase().includes(search))
       );
     },
-    
-    getWordById: (id) => {
+
+    getWordById: id => {
       const { vocabulary } = get();
       return vocabulary.find(word => word.id === id);
     },
-    
-    getWordsByCategory: (category) => {
+
+    getWordsByCategory: category => {
       const { vocabulary } = get();
       return vocabulary.filter(word => word.category === category);
     },
-    
+
     getFavoriteWords: () => {
       const { vocabulary, favorites } = get();
       return vocabulary.filter(word => favorites.has(word.id));
     },
-    
+
     // Statistics
     getVocabularyStats: () => {
       const { vocabulary, favorites } = get();
-      
+
       // Category stats
       const categoryStats = vocabulary.reduce((acc, word) => {
         acc[word.category] = (acc[word.category] || 0) + 1;
         return acc;
       }, {});
-      
+
       // Level stats
       const levelStats = vocabulary.reduce((acc, word) => {
         acc[word.level] = (acc[word.level] || 0) + 1;
         return acc;
       }, {});
-      
+
       return {
         total: vocabulary.length,
         favorites: favorites.size,
@@ -270,11 +271,11 @@ export const useDataStore = create(
         levels: levelStats,
       };
     },
-    
+
     // Initialize all data
     initializeData: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         await Promise.all([
           get().loadVocabulary(),
@@ -288,11 +289,11 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     // Clear all data
     clearAllData: async () => {
       set({ isLoading: true, error: null });
-      
+
       try {
         await storageService.clearAll();
         set({
@@ -307,7 +308,7 @@ export const useDataStore = create(
         set({ isLoading: false });
       }
     },
-    
+
     // Error handling
     clearError: () => set({ error: null }),
   }))

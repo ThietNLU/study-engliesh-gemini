@@ -13,7 +13,7 @@ import {
   limit,
   serverTimestamp,
   writeBatch,
-  Timestamp
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../../../shared/config/firebase';
 
@@ -21,7 +21,7 @@ import { db } from '../../../shared/config/firebase';
 const COLLECTIONS = {
   CARDS: 'cards',
   REVIEWS: 'reviews',
-  SESSIONS: 'sessions'
+  SESSIONS: 'sessions',
 };
 
 // User ID fallback for local development (khi chưa có authentication)
@@ -34,13 +34,13 @@ const getCurrentUserId = () => {
 };
 
 // Helper function to get user's subcollection reference
-const getUserCollection = (collectionName) => {
+const getUserCollection = collectionName => {
   const userId = getCurrentUserId();
   return collection(db, 'users', userId, collectionName);
 };
 
 // Helper function to convert Firestore timestamps
-const convertTimestamps = (data) => {
+const convertTimestamps = data => {
   const converted = { ...data };
   Object.keys(converted).forEach(key => {
     if (converted[key] instanceof Timestamp) {
@@ -68,7 +68,7 @@ export const flashcardService = {
         const data = convertTimestamps(doc.data());
         cards.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -96,7 +96,7 @@ export const flashcardService = {
         repetitions: 0,
         totalReviews: 0,
         lastReviewed: null,
-        nextReview: serverTimestamp() // Available immediately
+        nextReview: serverTimestamp(), // Available immediately
       };
 
       const docRef = await addDoc(cardsRef, newCard);
@@ -107,7 +107,7 @@ export const flashcardService = {
         ...newCard,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        nextReview: new Date().toISOString()
+        nextReview: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error adding flashcard:', error);
@@ -135,7 +135,7 @@ export const flashcardService = {
           repetitions: 0,
           totalReviews: 0,
           lastReviewed: null,
-          nextReview: serverTimestamp()
+          nextReview: serverTimestamp(),
         };
 
         batch.set(docRef, newCard);
@@ -144,7 +144,7 @@ export const flashcardService = {
           ...newCard,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          nextReview: new Date().toISOString()
+          nextReview: new Date().toISOString(),
         });
       }
 
@@ -166,15 +166,19 @@ export const flashcardService = {
 
       const updatedData = {
         ...updateData,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       // Convert date strings to Timestamps for Firestore
       if (updatedData.lastReviewed) {
-        updatedData.lastReviewed = Timestamp.fromDate(new Date(updatedData.lastReviewed));
+        updatedData.lastReviewed = Timestamp.fromDate(
+          new Date(updatedData.lastReviewed)
+        );
       }
       if (updatedData.nextReview) {
-        updatedData.nextReview = Timestamp.fromDate(new Date(updatedData.nextReview));
+        updatedData.nextReview = Timestamp.fromDate(
+          new Date(updatedData.nextReview)
+        );
       }
 
       await updateDoc(cardRef, updatedData);
@@ -192,7 +196,7 @@ export const flashcardService = {
 
       const cardsRef = getUserCollection(COLLECTIONS.CARDS);
       const cardRef = doc(cardsRef, cardId);
-      
+
       await deleteDoc(cardRef);
       return cardId;
     } catch (error) {
@@ -208,7 +212,7 @@ export const flashcardService = {
 
       const cardsRef = getUserCollection(COLLECTIONS.CARDS);
       const now = Timestamp.now();
-      
+
       const q = query(
         cardsRef,
         where('nextReview', '<=', now),
@@ -222,7 +226,7 @@ export const flashcardService = {
         const data = convertTimestamps(doc.data());
         cards.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -252,7 +256,7 @@ export const flashcardService = {
         const data = convertTimestamps(doc.data());
         cards.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -283,7 +287,7 @@ export const flashcardService = {
       console.error('Error clearing flashcards:', error);
       throw error;
     }
-  }
+  },
 };
 
 // ===== REVIEW OPERATIONS =====
@@ -300,7 +304,7 @@ const reviewService = {
         cardId,
         rating, // 'again', 'hard', 'good', 'easy'
         reviewedAt: serverTimestamp(),
-        timeTaken // in seconds
+        timeTaken, // in seconds
       };
 
       const docRef = await addDoc(reviewsRef, reviewData);
@@ -308,7 +312,7 @@ const reviewService = {
       return {
         id: docRef.id,
         ...reviewData,
-        reviewedAt: new Date().toISOString()
+        reviewedAt: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error adding review:', error);
@@ -335,7 +339,7 @@ const reviewService = {
         const data = convertTimestamps(doc.data());
         reviews.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -369,7 +373,7 @@ const reviewService = {
         const data = convertTimestamps(doc.data());
         reviews.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -381,20 +385,28 @@ const reviewService = {
         good: reviews.filter(r => r.rating === 'good').length,
         easy: reviews.filter(r => r.rating === 'easy').length,
         averageTime: 0,
-        dailyStats: {}
+        dailyStats: {},
       };
 
       // Calculate average time
       const reviewsWithTime = reviews.filter(r => r.timeTaken);
       if (reviewsWithTime.length > 0) {
-        stats.averageTime = reviewsWithTime.reduce((sum, r) => sum + r.timeTaken, 0) / reviewsWithTime.length;
+        stats.averageTime =
+          reviewsWithTime.reduce((sum, r) => sum + r.timeTaken, 0) /
+          reviewsWithTime.length;
       }
 
       // Group by date for daily stats
       reviews.forEach(review => {
         const date = new Date(review.reviewedAt).toDateString();
         if (!stats.dailyStats[date]) {
-          stats.dailyStats[date] = { again: 0, hard: 0, good: 0, easy: 0, total: 0 };
+          stats.dailyStats[date] = {
+            again: 0,
+            hard: 0,
+            good: 0,
+            easy: 0,
+            total: 0,
+          };
         }
         stats.dailyStats[date][review.rating]++;
         stats.dailyStats[date].total++;
@@ -405,7 +417,7 @@ const reviewService = {
       console.error('Error getting review stats:', error);
       throw error;
     }
-  }
+  },
 };
 
 // ===== SESSION OPERATIONS =====
@@ -423,7 +435,7 @@ const sessionService = {
         filters,
         completedCards: 0,
         stats: { again: 0, hard: 0, good: 0, easy: 0 },
-        isActive: true
+        isActive: true,
       };
 
       const docRef = await addDoc(sessionsRef, sessionData);
@@ -431,7 +443,7 @@ const sessionService = {
       return {
         id: docRef.id,
         ...sessionData,
-        startedAt: new Date().toISOString()
+        startedAt: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error starting session:', error);
@@ -453,7 +465,7 @@ const sessionService = {
         stats: stats.stats,
         duration: stats.duration, // in minutes
         isActive: false,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(sessionRef, updateData);
@@ -461,7 +473,7 @@ const sessionService = {
       return {
         id: sessionId,
         ...updateData,
-        endedAt: new Date().toISOString()
+        endedAt: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error ending session:', error);
@@ -488,7 +500,7 @@ const sessionService = {
         const data = convertTimestamps(doc.data());
         sessions.push({
           id: doc.id,
-          ...data
+          ...data,
         });
       });
 
@@ -497,14 +509,14 @@ const sessionService = {
       console.error('Error getting recent sessions:', error);
       throw error;
     }
-  }
+  },
 };
 
 // ===== UTILITY FUNCTIONS =====
 
 const flashcardUtils = {
   // Convert vocabulary word to flashcard format
-  vocabToCard: (vocabWord) => ({
+  vocabToCard: vocabWord => ({
     front: vocabWord.word,
     back: `${vocabWord.definition}\n\nExample: ${vocabWord.example}`,
     category: vocabWord.category,
@@ -512,68 +524,72 @@ const flashcardUtils = {
     tags: vocabWord.tags || [],
     notes: vocabWord.notes || '',
     sourceType: 'vocabulary',
-    sourceId: vocabWord.id
+    sourceId: vocabWord.id,
   }),
 
   // Batch convert vocabulary to flashcards
-  vocabArrayToCards: (vocabArray) => {
+  vocabArrayToCards: vocabArray => {
     return vocabArray.map(flashcardUtils.vocabToCard);
   },
 
   // Parse CSV format for import
-  parseCSV: (csvText) => {
+  parseCSV: csvText => {
     const lines = csvText.split('\n').filter(line => line.trim());
     const headers = lines[0].split(',').map(h => h.trim());
-    
+
     return lines.slice(1).map(line => {
       const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
       const card = {};
-      
+
       headers.forEach((header, index) => {
         card[header] = values[index] || '';
       });
-      
+
       return card;
     });
   },
 
   // Export cards to CSV format
-  exportToCSV: (cards) => {
+  exportToCSV: cards => {
     if (cards.length === 0) return '';
 
     const headers = ['front', 'back', 'category', 'level', 'tags', 'notes'];
     const csvContent = [
       headers.join(','),
-      ...cards.map(card => 
+      ...cards.map(card =>
         headers.map(header => `"${card[header] || ''}"`).join(',')
-      )
+      ),
     ].join('\n');
 
     return csvContent;
   },
 
   // Export cards to Anki format
-  exportToAnki: (cards) => {
+  exportToAnki: cards => {
     // Anki format: Front TAB Back TAB Tags
-    return cards.map(card => {
-      const tags = Array.isArray(card.tags) ? card.tags.join(' ') : card.tags || '';
-      return `${card.front}\t${card.back}\t${tags}`;
-    }).join('\n');
+    return cards
+      .map(card => {
+        const tags = Array.isArray(card.tags)
+          ? card.tags.join(' ')
+          : card.tags || '';
+        return `${card.front}\t${card.back}\t${tags}`;
+      })
+      .join('\n');
   },
 
   // Parse Anki format
-  parseAnki: (ankiText) => {
+  parseAnki: ankiText => {
     const lines = ankiText.split('\n').filter(line => line.trim());
-    
+
     return lines.map(line => {
       const parts = line.split('\t');
       return {
         front: parts[0] || '',
         back: parts[1] || '',
-        tags: parts[2] ? parts[2].split(' ').filter(tag => tag.trim()) : []
+        tags: parts[2] ? parts[2].split(' ').filter(tag => tag.trim()) : [],
       };
     });
-  }
+  },
 };
 
 // Export everything
@@ -581,5 +597,5 @@ export {
   flashcardService as default,
   reviewService,
   sessionService,
-  flashcardUtils
+  flashcardUtils,
 };

@@ -7,11 +7,11 @@ export { default as FlashcardStats } from './components/FlashcardStats';
 export { default as StudyMode } from './components/StudyMode';
 
 // Export services
-export { 
+export {
   default as flashcardService,
   reviewService,
   sessionService,
-  flashcardUtils
+  flashcardUtils,
 } from './services/flashcardService';
 
 // Export store
