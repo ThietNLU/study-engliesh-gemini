@@ -10,6 +10,7 @@ import {
   CreditCard,
   BarChart3,
   FolderOpen,
+  Zap,
 } from 'lucide-react';
 
 const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
@@ -52,6 +53,12 @@ const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
         setCurrentMode('quiz');
         resetQuiz();
       },
+    },
+    {
+      id: 'ai-quiz',
+      label: 'AI Quiz',
+      icon: Zap,
+      action: () => setCurrentMode('ai-quiz'),
     },
     {
       id: 'add',

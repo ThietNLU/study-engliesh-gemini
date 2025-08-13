@@ -7,7 +7,7 @@ import {
   FlashcardManager,
   FlashcardStats,
 } from '../features/flashcard';
-import { QuizMode } from '../features/quiz';
+import { QuizMode, QuizModeAdvanced } from '../features/quiz';
 import {
   AddWordMode,
   ManageMode,
@@ -316,6 +316,9 @@ const EnglishVocabApp = () => {
             accent={accent}
           />
         )}
+
+        {/* AI Quiz Generator Mode */}
+        {currentMode === 'ai-quiz' && <QuizModeAdvanced />}
 
         {/* Add New Word Mode */}
         {currentMode === 'add' && (

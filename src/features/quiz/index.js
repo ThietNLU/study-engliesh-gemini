@@ -1,5 +1,11 @@
 // Quiz feature exports
 export { default as QuizMode } from './components/QuizMode';
+export { default as QuizGenerator } from './components/QuizGenerator';
+export { default as QuizPlayer } from './components/QuizPlayer';
+export { default as QuizModeAdvanced } from './components/QuizModeAdvanced';
 
-// You can add hooks and services exports here when needed
+// Services
+export { default as quizGeneratorService } from './services/quizGeneratorService';
+
+// You can add hooks exports here when needed
 // export { useQuiz } from './hooks/useQuiz';
