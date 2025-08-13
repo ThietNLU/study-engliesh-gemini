@@ -23,14 +23,14 @@ export const safeStorageService = {
       const newWord = {
         ...wordData,
         id: Math.max(...existing.map(w => w.id), 0) + 1,
-        dateAdded: new Date().toISOString()
+        dateAdded: new Date().toISOString(),
       };
       const updated = [...existing, newWord];
       localStorageHelper.setVocabulary(updated);
-      
+
       // Mark that user now has data
       localStorageHelper.setHasEverHadData(true);
-      
+
       return newWord;
     },
 
@@ -39,20 +39,20 @@ export const safeStorageService = {
       const newWords = wordsArray.map((word, index) => ({
         ...word,
         id: Math.max(...existing.map(w => w.id), 0) + index + 1,
-        dateAdded: new Date().toISOString()
+        dateAdded: new Date().toISOString(),
       }));
       const updated = [...existing, ...newWords];
       localStorageHelper.setVocabulary(updated);
-      
+
       // Mark that user now has data
       localStorageHelper.setHasEverHadData(true);
-      
+
       return newWords;
     },
 
     async update(wordId, updateData) {
       const existing = localStorageHelper.getVocabulary();
-      const updated = existing.map(word => 
+      const updated = existing.map(word =>
         word.id === wordId ? { ...word, ...updateData } : word
       );
       localStorageHelper.setVocabulary(updated);
@@ -70,7 +70,7 @@ export const safeStorageService = {
     async getByCategory(category) {
       const vocabulary = localStorageHelper.getVocabulary();
       return vocabulary.filter(word => word.category === category);
-    }
+    },
   },
 
   // Favorites operations
@@ -103,7 +103,7 @@ export const safeStorageService = {
         await this.add(wordId);
         return true;
       }
-    }
+    },
   },
 
   // Settings operations
@@ -111,11 +111,11 @@ export const safeStorageService = {
     async getApiKey() {
       return localStorageHelper.getApiKey();
     },
-    
+
     async setApiKey(apiKey) {
       localStorageHelper.setApiKey(apiKey);
       return apiKey;
-    }
+    },
   },
 
   // Migration and backup operations
@@ -124,7 +124,7 @@ export const safeStorageService = {
     async isFirstTimeUse() {
       const hasVocab = localStorage.getItem('englishVocabulary');
       const hasEverHadData = localStorageHelper.getHasEverHadData();
-      
+
       // First time use: no vocabulary AND never had data before
       return !hasVocab && !hasEverHadData;
     },
@@ -133,12 +133,12 @@ export const safeStorageService = {
       const vocabulary = localStorageHelper.getVocabulary();
       const favorites = localStorageHelper.getFavorites();
       const apiKey = localStorageHelper.getApiKey();
-      
+
       return {
         vocabulary,
         favorites,
         settings: { apiKey },
-        exportDate: new Date().toISOString()
+        exportDate: new Date().toISOString(),
       };
     },
 
@@ -150,8 +150,8 @@ export const safeStorageService = {
       localStorageHelper.setHasEverHadData(true);
       console.log('Local Storage cleared successfully!');
       return true;
-    }
-  }
+    },
+  },
 };
 
 export default safeStorageService;

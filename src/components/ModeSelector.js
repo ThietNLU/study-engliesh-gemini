@@ -1,21 +1,67 @@
 import React from 'react';
-import { Home, BookOpen, Brain, Plus, Settings, Sparkles, Database } from 'lucide-react';
+import {
+  Home,
+  BookOpen,
+  Brain,
+  Plus,
+  Settings,
+  Sparkles,
+  Database,
+} from 'lucide-react';
 
 const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
   const modes = [
-    { id: 'home', label: 'Trang chủ', icon: Home, action: () => setCurrentMode('home') },
-    { id: 'study', label: 'Học từ', icon: BookOpen, action: () => setCurrentMode('study') },
-    { id: 'quiz', label: 'Kiểm tra', icon: Brain, action: () => { setCurrentMode('quiz'); resetQuiz(); } },
-    { id: 'add', label: 'Thêm từ', icon: Plus, action: () => setCurrentMode('add') },
-    { id: 'ai', label: 'AI Tạo từ', icon: Sparkles, action: () => setCurrentMode('ai') },
-    { id: 'manage', label: 'Quản lý', icon: Settings, action: () => setCurrentMode('manage') },
-    { id: 'database', label: 'Cơ sở dữ liệu', icon: Database, action: () => setCurrentMode('database') }
+    {
+      id: 'home',
+      label: 'Trang chủ',
+      icon: Home,
+      action: () => setCurrentMode('home'),
+    },
+    {
+      id: 'study',
+      label: 'Học từ',
+      icon: BookOpen,
+      action: () => setCurrentMode('study'),
+    },
+    {
+      id: 'quiz',
+      label: 'Kiểm tra',
+      icon: Brain,
+      action: () => {
+        setCurrentMode('quiz');
+        resetQuiz();
+      },
+    },
+    {
+      id: 'add',
+      label: 'Thêm từ',
+      icon: Plus,
+      action: () => setCurrentMode('add'),
+    },
+    {
+      id: 'ai',
+      label: 'AI Tạo từ',
+      icon: Sparkles,
+      action: () => setCurrentMode('ai'),
+    },
+    {
+      id: 'manage',
+      label: 'Quản lý',
+      icon: Settings,
+      action: () => setCurrentMode('manage'),
+    },
+    {
+      id: 'database',
+      label: 'Cơ sở dữ liệu',
+      icon: Database,
+      action: () => setCurrentMode('database'),
+    },
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-lg mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-100">
-      <div className="flex justify-center">
-        <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+    <div className='bg-white rounded-xl shadow-lg mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-100'>
+      <div className='flex justify-center'>
+        <div className='flex flex-wrap justify-center gap-1 sm:gap-2'>
           {modes.map(({ id, label, icon: Icon, action }) => (
             <button
               key={id}
@@ -26,9 +72,9 @@ const ModeSelector = ({ currentMode, setCurrentMode, resetQuiz }) => {
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-md'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{label}</span>
-              <span className="sm:hidden text-xs">{label.split(' ')[0]}</span>
+              <Icon className='w-4 h-4' />
+              <span className='hidden sm:inline'>{label}</span>
+              <span className='sm:hidden text-xs'>{label.split(' ')[0]}</span>
             </button>
           ))}
         </div>

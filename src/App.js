@@ -49,17 +49,29 @@ const EnglishVocabApp = () => {
     category: 'nouns',
     definition: '',
     example: '',
-    level: 'A1'
+    level: 'A1',
   });
 
   // Custom hooks
-  const { vocabulary, addWord, updateWord, deleteWord, addWordsFromAI, refreshVocabulary } = useVocabulary();
+  const {
+    vocabulary,
+    addWord,
+    updateWord,
+    deleteWord,
+    addWordsFromAI,
+    refreshVocabulary,
+  } = useVocabulary();
   const { favorites, toggleFavorite } = useFavorites();
   const { apiKey, setApiKey } = useApiKey();
 
   // Watch vocabulary changes and reset to home when it becomes empty
   useEffect(() => {
-    if (vocabulary.length === 0 && currentMode !== 'home' && currentMode !== 'add' && currentMode !== 'ai') {
+    if (
+      vocabulary.length === 0 &&
+      currentMode !== 'home' &&
+      currentMode !== 'add' &&
+      currentMode !== 'ai'
+    ) {
       setCurrentMode('home');
     }
   }, [vocabulary.length, currentMode]);
@@ -96,18 +108,18 @@ const EnglishVocabApp = () => {
       category: 'nouns',
       definition: '',
       example: '',
-      level: 'A1'
+      level: 'A1',
     });
-    
+
     // If this was the first word, switch to home mode to show the vocabulary
     if (vocabulary.length === 0) {
       setCurrentMode('home');
     }
-    
+
     alert('Đã thêm từ mới thành công!');
   };
 
-  const handleDeleteWord = (id) => {
+  const handleDeleteWord = id => {
     if (confirm('Bạn có chắc muốn xóa từ này?')) {
       deleteWord(id);
       if (currentCard >= vocabulary.length - 1) {
@@ -117,27 +129,34 @@ const EnglishVocabApp = () => {
   };
 
   const nextCard = () => {
-    setCurrentCard((prev) => (prev + 1) % vocabulary.length);
+    setCurrentCard(prev => (prev + 1) % vocabulary.length);
     setShowAnswer(false);
     setUserAnswer('');
   };
 
   const prevCard = () => {
-    setCurrentCard((prev) => (prev - 1 + vocabulary.length) % vocabulary.length);
+    setCurrentCard(prev => (prev - 1 + vocabulary.length) % vocabulary.length);
     setShowAnswer(false);
     setUserAnswer('');
   };
 
   const checkAnswer = () => {
-    const isCorrect = quizType === 'meaning' 
-      ? userAnswer.toLowerCase().includes(currentWord.vietnamese.toLowerCase()) ||
-        currentWord.vietnamese.toLowerCase().includes(userAnswer.toLowerCase())
-      : userAnswer.toLowerCase().includes(currentWord.english.toLowerCase()) ||
-        currentWord.english.toLowerCase().includes(userAnswer.toLowerCase());
-    
+    const isCorrect =
+      quizType === 'meaning'
+        ? userAnswer
+            .toLowerCase()
+            .includes(currentWord.vietnamese.toLowerCase()) ||
+          currentWord.vietnamese
+            .toLowerCase()
+            .includes(userAnswer.toLowerCase())
+        : userAnswer
+            .toLowerCase()
+            .includes(currentWord.english.toLowerCase()) ||
+          currentWord.english.toLowerCase().includes(userAnswer.toLowerCase());
+
     setScore(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1
+      total: prev.total + 1,
     }));
     setShowAnswer(true);
   };
@@ -151,33 +170,41 @@ const EnglishVocabApp = () => {
 
   const generateVocabularyWithAI = async () => {
     setIsLoading(true);
-    
+
     try {
       const existingWords = vocabulary.map(w => w.english.toLowerCase());
       console.log('Sending request to Gemini...');
       console.log('Request:', aiRequest);
       console.log('Existing words count:', existingWords.length);
-      
-      const aiWords = await geminiService.generateVocabulary(aiRequest, existingWords, apiKey);
+
+      const aiWords = await geminiService.generateVocabulary(
+        aiRequest,
+        existingWords,
+        apiKey
+      );
       console.log('Received AI words:', aiWords);
-      
+
       if (!aiWords || aiWords.length === 0) {
         throw new Error('AI không tạo được từ vựng nào');
       }
-      
-      const newWords = await addWordsFromAI(aiWords);
+
+      // Add AI words to vocabulary
+      await addWordsFromAI(aiWords);
       setAiRequest('');
-      
+
       // If this was the first time adding words, switch to home mode
       if (vocabulary.length === 0) {
         setCurrentMode('home');
       }
-      
-      alert(`✅ Đã thêm ${aiWords.length} từ vựng mới từ AI!\n\nCác từ mới: ${aiWords.map(w => w.english).join(', ')}`);
-      
+
+      alert(
+        `✅ Đã thêm ${aiWords.length} từ vựng mới từ AI!\n\nCác từ mới: ${aiWords.map(w => w.english).join(', ')}`
+      );
     } catch (error) {
       console.error('AI Generation Error:', error);
-      alert(`❌ ${error.message}\n\n💡 Gợi ý:\n- Kiểm tra API key Gemini\n- Kiểm tra kết nối internet\n- Thử yêu cầu đơn giản hơn`);
+      alert(
+        `❌ ${error.message}\n\n💡 Gợi ý:\n- Kiểm tra API key Gemini\n- Kiểm tra kết nối internet\n- Thử yêu cầu đơn giản hơn`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -189,12 +216,12 @@ const EnglishVocabApp = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <Header accent={accent} setAccent={setAccent} />
-        
-        <ModeSelector 
-          currentMode={currentMode} 
+
+        <ModeSelector
+          currentMode={currentMode}
           setCurrentMode={setCurrentMode}
           resetQuiz={resetQuiz}
         />

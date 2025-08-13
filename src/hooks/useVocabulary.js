@@ -12,7 +12,7 @@ export const useVocabulary = () => {
     const loadVocabulary = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const savedVocab = await storageService.vocabulary.getAll();
         // Always use saved vocabulary, even if empty
@@ -22,7 +22,7 @@ export const useVocabulary = () => {
         } else {
           // Check if this is first time use (no data in storage at all)
           const isFirstTime = await storageService.migration.isFirstTimeUse();
-          
+
           if (isFirstTime) {
             // First time use - initialize with sample data
             setVocabulary(initialVocabulary);
@@ -46,10 +46,10 @@ export const useVocabulary = () => {
     loadVocabulary();
   }, []);
 
-  const addWord = async (newWord) => {
+  const addWord = async newWord => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const wordToAdd = await storageService.vocabulary.add(newWord);
       setVocabulary(prev => [...prev, wordToAdd]);
@@ -66,12 +66,12 @@ export const useVocabulary = () => {
   const updateWord = async (id, updatedWord) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await storageService.vocabulary.update(id, updatedWord);
-      setVocabulary(prev => prev.map(word => 
-        word.id === id ? { ...word, ...updatedWord } : word
-      ));
+      setVocabulary(prev =>
+        prev.map(word => (word.id === id ? { ...word, ...updatedWord } : word))
+      );
     } catch (err) {
       console.error('Error updating word:', err);
       setError(err.message);
@@ -81,10 +81,10 @@ export const useVocabulary = () => {
     }
   };
 
-  const deleteWord = async (id) => {
+  const deleteWord = async id => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await storageService.vocabulary.delete(id);
       setVocabulary(prev => prev.filter(word => word.id !== id));
@@ -97,10 +97,10 @@ export const useVocabulary = () => {
     }
   };
 
-  const addWordsFromAI = async (aiWords) => {
+  const addWordsFromAI = async aiWords => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const newWords = await storageService.vocabulary.addMultiple(aiWords);
       setVocabulary(prev => [...prev, ...newWords]);
@@ -117,17 +117,17 @@ export const useVocabulary = () => {
   const refreshVocabulary = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const savedVocab = await storageService.vocabulary.getAll();
-      
+
       // Apply the same logic as in useEffect
       if (savedVocab.length > 0) {
         setVocabulary(savedVocab);
       } else {
         // Check if this is first time use (no data in storage at all)
         const isFirstTime = await storageService.migration.isFirstTimeUse();
-        
+
         if (isFirstTime) {
           // First time use - initialize with sample data
           setVocabulary(initialVocabulary);
@@ -154,6 +154,6 @@ export const useVocabulary = () => {
     updateWord,
     deleteWord,
     addWordsFromAI,
-    refreshVocabulary
+    refreshVocabulary,
   };
 };

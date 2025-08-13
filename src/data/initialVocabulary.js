@@ -10,7 +10,7 @@ export const initialVocabulary = [
     definition: 'Used as a greeting or to begin a phone conversation',
     example: 'Hello, how are you today?',
     level: 'A1',
-    dateAdded: new Date('2024-01-01').toISOString()
+    dateAdded: new Date('2024-01-01').toISOString(),
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ export const initialVocabulary = [
     definition: 'Pleasing the senses or mind aesthetically',
     example: 'The sunset was absolutely beautiful.',
     level: 'A2',
-    dateAdded: new Date('2024-01-02').toISOString()
+    dateAdded: new Date('2024-01-02').toISOString(),
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ export const initialVocabulary = [
     definition: 'A set of circumstances that makes it possible to do something',
     example: 'This job offers a great opportunity for career growth.',
     level: 'B1',
-    dateAdded: new Date('2024-01-03').toISOString()
+    dateAdded: new Date('2024-01-03').toISOString(),
   },
   {
     id: 4,
@@ -46,7 +46,7 @@ export const initialVocabulary = [
     definition: 'To achieve or complete successfully',
     example: 'She was able to accomplish all her goals this year.',
     level: 'B2',
-    dateAdded: new Date('2024-01-04').toISOString()
+    dateAdded: new Date('2024-01-04').toISOString(),
   },
   {
     id: 5,
@@ -56,9 +56,10 @@ export const initialVocabulary = [
     pronunciation_uk: 'ˌserənˈdɪpɪti',
     category: 'nouns',
     definition: 'The occurrence of events by chance in a happy way',
-    example: 'Meeting my future business partner at that coffee shop was pure serendipity.',
+    example:
+      'Meeting my future business partner at that coffee shop was pure serendipity.',
     level: 'C1',
-    dateAdded: new Date('2024-01-05').toISOString()
+    dateAdded: new Date('2024-01-05').toISOString(),
   },
   {
     id: 6,
@@ -68,9 +69,10 @@ export const initialVocabulary = [
     pronunciation_uk: 'ˌpɜːspɪˈkeɪʃəs',
     category: 'adjectives',
     definition: 'Having a ready insight into and understanding of things',
-    example: 'Her perspicacious analysis of the market trends impressed the board.',
+    example:
+      'Her perspicacious analysis of the market trends impressed the board.',
     level: 'C2',
-    dateAdded: new Date('2024-01-06').toISOString()
+    dateAdded: new Date('2024-01-06').toISOString(),
   },
   {
     id: 7,
@@ -82,7 +84,7 @@ export const initialVocabulary = [
     definition: 'At a fast speed; rapidly',
     example: 'She quickly finished her homework before dinner.',
     level: 'A2',
-    dateAdded: new Date('2024-01-07').toISOString()
+    dateAdded: new Date('2024-01-07').toISOString(),
   },
   {
     id: 8,
@@ -94,7 +96,7 @@ export const initialVocabulary = [
     definition: 'Move at a speed faster than a walk',
     example: 'I run every morning to stay healthy.',
     level: 'A1',
-    dateAdded: new Date('2024-01-08').toISOString()
+    dateAdded: new Date('2024-01-08').toISOString(),
   },
   {
     id: 9,
@@ -106,7 +108,7 @@ export const initialVocabulary = [
     definition: 'To make people feel more relaxed in a social situation',
     example: 'He told a joke to break the ice at the meeting.',
     level: 'B2',
-    dateAdded: new Date('2024-01-09').toISOString()
+    dateAdded: new Date('2024-01-09').toISOString(),
   },
   {
     id: 10,
@@ -118,7 +120,7 @@ export const initialVocabulary = [
     definition: 'Despite; without being affected by',
     example: 'In spite of the rain, we continued our hike.',
     level: 'B1',
-    dateAdded: new Date('2024-01-10').toISOString()
+    dateAdded: new Date('2024-01-10').toISOString(),
   },
   {
     id: 11,
@@ -130,7 +132,7 @@ export const initialVocabulary = [
     definition: 'To choose what to do after considering options',
     example: 'I need to make a decision about my career.',
     level: 'B1',
-    dateAdded: new Date('2024-01-11').toISOString()
+    dateAdded: new Date('2024-01-11').toISOString(),
   },
   {
     id: 12,
@@ -139,37 +141,118 @@ export const initialVocabulary = [
     pronunciation_us: 'ˌɑːrtɪˈfɪʃəl ɪnˈtelɪdʒəns',
     pronunciation_uk: 'ˌɑːtɪˈfɪʃəl ɪnˈtelɪdʒəns',
     category: 'technology',
-    definition: 'Computer systems able to perform tasks normally requiring human intelligence',
+    definition:
+      'Computer systems able to perform tasks normally requiring human intelligence',
     example: 'Artificial intelligence is transforming many industries.',
     level: 'C1',
-    dateAdded: new Date('2024-01-12').toISOString()
-  }
+    dateAdded: new Date('2024-01-12').toISOString(),
+  },
 ];
 
 export const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 export const categories = [
-  { id: 'nouns', name: 'Danh từ', icon: '📝', description: 'Từ chỉ người, vật, hiện tượng' },
-  { id: 'verbs', name: 'Động từ', icon: '🏃', description: 'Từ chỉ hành động, trạng thái' },
-  { id: 'adjectives', name: 'Tính từ', icon: '🎨', description: 'Từ chỉ tính chất, đặc điểm' },
-  { id: 'adverbs', name: 'Trạng từ', icon: '⚡', description: 'Từ bổ nghĩa cho động từ, tính từ' },
-  { id: 'prepositions', name: 'Giới từ', icon: '🔗', description: 'Từ chỉ mối quan hệ vị trí, thời gian' },
-  { id: 'conjunctions', name: 'Liên từ', icon: '🤝', description: 'Từ nối các từ, cụm từ, câu' },
-  { id: 'pronouns', name: 'Đại từ', icon: '👤', description: 'Từ thay thế cho danh từ' },
-  { id: 'interjections', name: 'Thán từ', icon: '💬', description: 'Từ thể hiện cảm xúc' },
-  { id: 'phrases', name: 'Cụm từ', icon: '📱', description: 'Tổ hợp nhiều từ có nghĩa riêng' },
-  { id: 'idioms', name: 'Thành ngữ', icon: '🎭', description: 'Cách nói có nghĩa bóng' },
-  { id: 'collocations', name: 'Từ đi với nhau', icon: '🔄', description: 'Những từ thường xuất hiện cùng nhau' },
-  { id: 'business', name: 'Kinh doanh', icon: '💼', description: 'Từ vựng chuyên ngành kinh doanh' },
-  { id: 'technology', name: 'Công nghệ', icon: '💻', description: 'Từ vựng về công nghệ thông tin' },
-  { id: 'travel', name: 'Du lịch', icon: '✈️', description: 'Từ vựng về du lịch, giao thông' },
-  { id: 'food', name: 'Ẩm thực', icon: '🍕', description: 'Từ vựng về đồ ăn, thức uống' },
-  { id: 'academic', name: 'Học thuật', icon: '🎓', description: 'Từ vựng học thuật, chính thức' }
+  {
+    id: 'nouns',
+    name: 'Danh từ',
+    icon: '📝',
+    description: 'Từ chỉ người, vật, hiện tượng',
+  },
+  {
+    id: 'verbs',
+    name: 'Động từ',
+    icon: '🏃',
+    description: 'Từ chỉ hành động, trạng thái',
+  },
+  {
+    id: 'adjectives',
+    name: 'Tính từ',
+    icon: '🎨',
+    description: 'Từ chỉ tính chất, đặc điểm',
+  },
+  {
+    id: 'adverbs',
+    name: 'Trạng từ',
+    icon: '⚡',
+    description: 'Từ bổ nghĩa cho động từ, tính từ',
+  },
+  {
+    id: 'prepositions',
+    name: 'Giới từ',
+    icon: '🔗',
+    description: 'Từ chỉ mối quan hệ vị trí, thời gian',
+  },
+  {
+    id: 'conjunctions',
+    name: 'Liên từ',
+    icon: '🤝',
+    description: 'Từ nối các từ, cụm từ, câu',
+  },
+  {
+    id: 'pronouns',
+    name: 'Đại từ',
+    icon: '👤',
+    description: 'Từ thay thế cho danh từ',
+  },
+  {
+    id: 'interjections',
+    name: 'Thán từ',
+    icon: '💬',
+    description: 'Từ thể hiện cảm xúc',
+  },
+  {
+    id: 'phrases',
+    name: 'Cụm từ',
+    icon: '📱',
+    description: 'Tổ hợp nhiều từ có nghĩa riêng',
+  },
+  {
+    id: 'idioms',
+    name: 'Thành ngữ',
+    icon: '🎭',
+    description: 'Cách nói có nghĩa bóng',
+  },
+  {
+    id: 'collocations',
+    name: 'Từ đi với nhau',
+    icon: '🔄',
+    description: 'Những từ thường xuất hiện cùng nhau',
+  },
+  {
+    id: 'business',
+    name: 'Kinh doanh',
+    icon: '💼',
+    description: 'Từ vựng chuyên ngành kinh doanh',
+  },
+  {
+    id: 'technology',
+    name: 'Công nghệ',
+    icon: '💻',
+    description: 'Từ vựng về công nghệ thông tin',
+  },
+  {
+    id: 'travel',
+    name: 'Du lịch',
+    icon: '✈️',
+    description: 'Từ vựng về du lịch, giao thông',
+  },
+  {
+    id: 'food',
+    name: 'Ẩm thực',
+    icon: '🍕',
+    description: 'Từ vựng về đồ ăn, thức uống',
+  },
+  {
+    id: 'academic',
+    name: 'Học thuật',
+    icon: '🎓',
+    description: 'Từ vựng học thuật, chính thức',
+  },
 ];
 
 export const levelLabels = {
   A1: 'A1 - Khởi đầu',
-  A2: 'A2 - Cơ bản', 
+  A2: 'A2 - Cơ bản',
   B1: 'B1 - Trung cấp thấp',
   B2: 'B2 - Trung cấp cao',
   C1: 'C1 - Cao cấp',
@@ -177,5 +260,5 @@ export const levelLabels = {
   // Backward compatibility
   beginner: 'A1-A2 - Cơ bản',
   intermediate: 'B1-B2 - Trung cấp',
-  advanced: 'C1-C2 - Nâng cao'
+  advanced: 'C1-C2 - Nâng cao',
 };

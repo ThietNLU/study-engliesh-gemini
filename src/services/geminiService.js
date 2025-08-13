@@ -1,7 +1,8 @@
 // Gemini API service
 class GeminiService {
   constructor() {
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    this.baseUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   }
 
   async generateVocabulary(aiRequest, existingWords, apiKey) {
@@ -22,12 +23,16 @@ class GeminiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }]
-        })
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+        }),
       });
 
       if (!response.ok) {
@@ -38,14 +43,18 @@ class GeminiService {
 
       const data = await response.json();
       console.log('Gemini Response:', data);
-      
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+
+      if (
+        !data.candidates ||
+        !data.candidates[0] ||
+        !data.candidates[0].content
+      ) {
         throw new Error('Response từ AI không hợp lệ');
       }
 
       const aiText = data.candidates[0].content.parts[0].text;
       console.log('AI Text:', aiText);
-      
+
       return this.parseResponse(aiText);
     } catch (error) {
       console.error('Error generating vocabulary:', error);
@@ -93,31 +102,35 @@ Start JSON response now:`;
     try {
       // Clean the response text
       let cleanedText = aiText.trim();
-      
+
       // Remove markdown code blocks
-      cleanedText = cleanedText.replace(/```json\s*/gi, '').replace(/```\s*$/g, '');
+      cleanedText = cleanedText
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*$/g, '');
       cleanedText = cleanedText.replace(/```\s*/g, '');
-      
+
       // Remove any leading explanatory text before JSON
       const jsonStart = cleanedText.indexOf('{');
       const jsonEnd = cleanedText.lastIndexOf('}') + 1;
-      
+
       if (jsonStart === -1 || jsonEnd === 0) {
         console.error('No JSON found in AI response:', aiText);
         throw new Error('Không tìm thấy JSON trong phản hồi từ AI');
       }
-      
+
       let jsonString = cleanedText.substring(jsonStart, jsonEnd);
       console.log('Extracted JSON string:', jsonString);
-      
+
       // Fix common JSON formatting issues
       jsonString = this.fixJsonFormat(jsonString);
-      
+
       const aiVocabulary = JSON.parse(jsonString);
-      
+
       if (!aiVocabulary.words || !Array.isArray(aiVocabulary.words)) {
         console.error('Invalid vocabulary structure:', aiVocabulary);
-        throw new Error('Format dữ liệu từ AI không đúng - không tìm thấy mảng words');
+        throw new Error(
+          'Format dữ liệu từ AI không đúng - không tìm thấy mảng words'
+        );
       }
 
       if (aiVocabulary.words.length === 0) {
@@ -126,7 +139,8 @@ Start JSON response now:`;
 
       // Validate each word has required fields
       const validWords = aiVocabulary.words.filter(word => {
-        const isValid = word.english && word.vietnamese && word.category && word.level;
+        const isValid =
+          word.english && word.vietnamese && word.category && word.level;
         if (!isValid) {
           console.warn('Invalid word structure:', word);
         }
@@ -149,23 +163,28 @@ Start JSON response now:`;
   }
 
   fixJsonFormat(jsonString) {
-    return jsonString
-      // Remove trailing commas before closing braces/brackets
-      .replace(/,(\s*[}\]])/g, '$1')
-      
-      // Ensure property names are properly quoted
-      .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?(\s*):/g, '"$2"$4:')
-      
-      // Convert single quotes to double quotes for strings
-      .replace(/:\s*'([^']*)'/g, ': "$1"')
-      
-      // Clean up whitespace
-      .replace(/\n/g, ' ')
-      .replace(/\t/g, ' ')
-      .replace(/\s+/g, ' ')
-      
-      // Fix missing quotes around values (basic attempt)
-      .replace(/:\s*([a-zA-Z][a-zA-Z0-9\s]*[a-zA-Z0-9])\s*([,}])/g, ': "$1"$2');
+    return (
+      jsonString
+        // Remove trailing commas before closing braces/brackets
+        .replace(/,(\s*[}\]])/g, '$1')
+
+        // Ensure property names are properly quoted
+        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?(\s*):/g, '"$2"$4:')
+
+        // Convert single quotes to double quotes for strings
+        .replace(/:\s*'([^']*)'/g, ': "$1"')
+
+        // Clean up whitespace
+        .replace(/\n/g, ' ')
+        .replace(/\t/g, ' ')
+        .replace(/\s+/g, ' ')
+
+        // Fix missing quotes around values (basic attempt)
+        .replace(
+          /:\s*([a-zA-Z][a-zA-Z0-9\s]*[a-zA-Z0-9])\s*([,}])/g,
+          ': "$1"$2'
+        )
+    );
   }
 }
 

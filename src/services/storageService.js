@@ -17,9 +17,9 @@ try {
 const STORAGE_CONFIG = {
   // Đặt thành 'firestore' để sử dụng Firestore, 'localStorage' để sử dụng Local Storage
   backend: process.env.REACT_APP_STORAGE_BACKEND || 'localStorage', // Default to localStorage for safety
-  
+
   // Tự động fallback về localStorage nếu Firestore không khả dụng
-  autoFallback: true
+  autoFallback: true,
 };
 
 // Check if Firestore is available
@@ -38,12 +38,12 @@ const getStorageBackend = () => {
   if (STORAGE_CONFIG.backend === 'firestore' && isFirestoreAvailable()) {
     return 'firestore';
   }
-  
+
   if (STORAGE_CONFIG.autoFallback) {
     console.log('Using localStorage as storage backend');
     return 'localStorage';
   }
-  
+
   throw new Error('No storage backend available');
 };
 
@@ -64,7 +64,7 @@ export const storageService = {
   vocabulary: {
     async getAll() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.getAll();
       } else {
@@ -74,7 +74,7 @@ export const storageService = {
 
     async add(wordData) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.add(wordData);
       } else {
@@ -83,21 +83,21 @@ export const storageService = {
         const newWord = {
           ...wordData,
           id: Math.max(...existing.map(w => w.id), 0) + 1,
-          dateAdded: new Date().toISOString()
+          dateAdded: new Date().toISOString(),
         };
         const updated = [...existing, newWord];
         localStorageHelper.setVocabulary(updated);
-        
+
         // Mark that user now has data
         localStorageHelper.setHasEverHadData(true);
-        
+
         return newWord;
       }
     },
 
     async addMultiple(wordsArray) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.addMultiple(wordsArray);
       } else {
@@ -105,26 +105,26 @@ export const storageService = {
         const newWords = wordsArray.map((word, index) => ({
           ...word,
           id: Math.max(...existing.map(w => w.id), 0) + index + 1,
-          dateAdded: new Date().toISOString()
+          dateAdded: new Date().toISOString(),
         }));
         const updated = [...existing, ...newWords];
         localStorageHelper.setVocabulary(updated);
-        
+
         // Mark that user now has data
         localStorageHelper.setHasEverHadData(true);
-        
+
         return newWords;
       }
     },
 
     async update(wordId, updateData) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.update(wordId, updateData);
       } else {
         const existing = localStorageHelper.getVocabulary();
-        const updated = existing.map(word => 
+        const updated = existing.map(word =>
           word.id === wordId ? { ...word, ...updateData } : word
         );
         localStorageHelper.setVocabulary(updated);
@@ -134,8 +134,15 @@ export const storageService = {
 
     async delete(wordId) {
       const backend = getStorageBackend();
-      console.log('Delete word - Backend:', backend, 'WordId:', wordId, 'Type:', typeof wordId);
-      
+      console.log(
+        'Delete word - Backend:',
+        backend,
+        'WordId:',
+        wordId,
+        'Type:',
+        typeof wordId
+      );
+
       if (backend === 'firestore') {
         return await vocabularyService.delete(wordId);
       } else {
@@ -148,7 +155,7 @@ export const storageService = {
 
     async getByCategory(category) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.getByCategory(category);
       } else {
@@ -159,7 +166,7 @@ export const storageService = {
 
     async getByCEFRLevel(level) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.getByCEFRLevel(level);
       } else {
@@ -170,7 +177,7 @@ export const storageService = {
 
     async clear() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await vocabularyService.clear();
       } else {
@@ -179,14 +186,14 @@ export const storageService = {
         localStorageHelper.setHasEverHadData(true);
         return true;
       }
-    }
+    },
   },
 
   // Favorites operations
   favorites: {
     async getAll() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await favoritesService.getAll();
       } else {
@@ -197,7 +204,7 @@ export const storageService = {
 
     async add(wordId) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await favoritesService.add(wordId);
       } else {
@@ -210,7 +217,7 @@ export const storageService = {
 
     async remove(wordId) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await favoritesService.remove(wordId);
       } else {
@@ -223,7 +230,7 @@ export const storageService = {
 
     async toggle(wordId) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await favoritesService.toggle(wordId);
       } else {
@@ -236,28 +243,28 @@ export const storageService = {
           return true;
         }
       }
-    }
+    },
   },
 
   // Settings operations
   settings: {
     async get() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await userSettingsService.get();
       } else {
         return {
           apiKey: localStorageHelper.getApiKey(),
           theme: 'light',
-          language: 'vi'
+          language: 'vi',
         };
       }
     },
 
     async update(settingsData) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await userSettingsService.update(settingsData);
       } else {
@@ -271,7 +278,7 @@ export const storageService = {
 
     async setApiKey(apiKey) {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await userSettingsService.setApiKey(apiKey);
       } else {
@@ -282,13 +289,13 @@ export const storageService = {
 
     async getApiKey() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await userSettingsService.getApiKey();
       } else {
         return localStorageHelper.getApiKey();
       }
-    }
+    },
   },
 
   // Migration and backup operations
@@ -296,7 +303,7 @@ export const storageService = {
     // Check if this is first time use (no vocabulary data exists)
     async isFirstTimeUse() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         const vocab = await vocabularyService.getAll();
         return vocab.length === 0;
@@ -304,7 +311,7 @@ export const storageService = {
         // For localStorage, check both if data exists and if user has ever had data
         const hasVocab = localStorage.getItem('englishVocabulary');
         const hasEverHadData = localStorageHelper.getHasEverHadData();
-        
+
         // First time use: no vocabulary AND never had data before
         return !hasVocab && !hasEverHadData;
       }
@@ -312,7 +319,7 @@ export const storageService = {
 
     async importFromLocalStorage() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await migrationService.importFromLocalStorage();
       } else {
@@ -324,7 +331,7 @@ export const storageService = {
 
     async exportAllData() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await migrationService.exportAllData();
       } else {
@@ -332,19 +339,19 @@ export const storageService = {
         const vocabulary = localStorageHelper.getVocabulary();
         const favorites = localStorageHelper.getFavorites();
         const apiKey = localStorageHelper.getApiKey();
-        
+
         return {
           vocabulary,
           favorites,
           settings: { apiKey },
-          exportDate: new Date().toISOString()
+          exportDate: new Date().toISOString(),
         };
       }
     },
 
     async clearAllData() {
       const backend = getStorageBackend();
-      
+
       if (backend === 'firestore') {
         return await migrationService.clearAllData();
       } else {
@@ -364,13 +371,13 @@ export const storageService = {
       if (!isFirestoreAvailable()) {
         throw new Error('Firestore is not available');
       }
-      
+
       // First import current data to Firestore
       await this.importFromLocalStorage();
-      
+
       // Update config
       STORAGE_CONFIG.backend = 'firestore';
-      
+
       console.log('Switched to Firestore storage backend');
       return true;
     },
@@ -379,20 +386,21 @@ export const storageService = {
       // Export current data if using Firestore
       if (getStorageBackend() === 'firestore') {
         const data = await this.exportAllData();
-        
+
         // Save to localStorage
         if (data.vocabulary) localStorageHelper.setVocabulary(data.vocabulary);
         if (data.favorites) localStorageHelper.setFavorites(data.favorites);
-        if (data.settings?.apiKey) localStorageHelper.setApiKey(data.settings.apiKey);
+        if (data.settings?.apiKey)
+          localStorageHelper.setApiKey(data.settings.apiKey);
       }
-      
+
       // Update config
       STORAGE_CONFIG.backend = 'localStorage';
-      
+
       console.log('Switched to Local Storage backend');
       return true;
-    }
-  }
+    },
+  },
 };
 
 // Convenience exports for backward compatibility

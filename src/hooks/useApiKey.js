@@ -11,7 +11,7 @@ export const useApiKey = () => {
     const loadApiKey = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const savedApiKey = await storageService.settings.getApiKey();
         setApiKeyState(savedApiKey);
@@ -27,10 +27,10 @@ export const useApiKey = () => {
     loadApiKey();
   }, []);
 
-  const setApiKey = async (newApiKey) => {
+  const setApiKey = async newApiKey => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await storageService.settings.setApiKey(newApiKey);
       setApiKeyState(newApiKey);
@@ -47,6 +47,6 @@ export const useApiKey = () => {
     apiKey,
     loading,
     error,
-    setApiKey
+    setApiKey,
   };
 };

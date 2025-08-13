@@ -14,7 +14,7 @@ const FirebaseStatus = () => {
   const checkFirebaseStatus = async () => {
     try {
       console.log('🔥 Checking Firebase Status...');
-      
+
       // Check if Firebase is initialized
       if (!db) {
         setStatus('not_configured');
@@ -24,8 +24,8 @@ const FirebaseStatus = () => {
           solutions: [
             'Kiểm tra file .env có đúng thông tin Firebase không',
             'Đảm bảo tất cả REACT_APP_FIREBASE_* variables được set',
-            'Restart server sau khi thay đổi .env'
-          ]
+            'Restart server sau khi thay đổi .env',
+          ],
         });
         return;
       }
@@ -37,12 +37,14 @@ const FirebaseStatus = () => {
         apiKey: config.apiKey ? '✅ Configured' : '❌ Missing',
         authDomain: config.authDomain,
         storageBucket: config.storageBucket,
-        appId: config.appId ? '✅ Configured' : '❌ Missing'
+        appId: config.appId ? '✅ Configured' : '❌ Missing',
       });
 
       // Check if using default values
-      if (config.projectId === 'your-project-id' || 
-          config.apiKey === 'your-api-key-here') {
+      if (
+        config.projectId === 'your-project-id' ||
+        config.apiKey === 'your-api-key-here'
+      ) {
         setStatus('using_defaults');
         setError('Đang sử dụng giá trị mẫu trong .env');
         return;
@@ -52,10 +54,9 @@ const FirebaseStatus = () => {
       const { collection, getDocs } = await import('firebase/firestore');
       const testCollection = collection(db, 'test');
       await getDocs(testCollection);
-      
+
       setStatus('connected');
       console.log('✅ Firebase connected successfully!');
-      
     } catch (error) {
       setStatus('error');
       setError(`Connection failed: ${error.message}`);
@@ -65,39 +66,53 @@ const FirebaseStatus = () => {
 
   const getStatusColor = () => {
     switch (status) {
-      case 'connected': return '#10B981';
-      case 'checking': return '#F59E0B';
-      case 'not_configured': return '#EF4444';
-      case 'using_defaults': return '#F59E0B';
-      case 'error': return '#EF4444';
-      default: return '#6B7280';
+      case 'connected':
+        return '#10B981';
+      case 'checking':
+        return '#F59E0B';
+      case 'not_configured':
+        return '#EF4444';
+      case 'using_defaults':
+        return '#F59E0B';
+      case 'error':
+        return '#EF4444';
+      default:
+        return '#6B7280';
     }
   };
 
   const getStatusText = () => {
     switch (status) {
-      case 'connected': return '✅ Firebase Connected';
-      case 'checking': return '🔄 Checking...';
-      case 'not_configured': return '❌ Not Configured';
-      case 'using_defaults': return '⚠️ Using Default Values';
-      case 'error': return '❌ Connection Failed';
-      default: return '❓ Unknown';
+      case 'connected':
+        return '✅ Firebase Connected';
+      case 'checking':
+        return '🔄 Checking...';
+      case 'not_configured':
+        return '❌ Not Configured';
+      case 'using_defaults':
+        return '⚠️ Using Default Values';
+      case 'error':
+        return '❌ Connection Failed';
+      default:
+        return '❓ Unknown';
     }
   };
 
   return (
-    <div style={{
-      margin: '20px',
-      padding: '20px',
-      border: `2px solid ${getStatusColor()}`,
-      borderRadius: '8px',
-      backgroundColor: '#f9fafb',
-      fontFamily: 'monospace'
-    }}>
+    <div
+      style={{
+        margin: '20px',
+        padding: '20px',
+        border: `2px solid ${getStatusColor()}`,
+        borderRadius: '8px',
+        backgroundColor: '#f9fafb',
+        fontFamily: 'monospace',
+      }}
+    >
       <h3 style={{ color: getStatusColor(), margin: '0 0 15px 0' }}>
         {getStatusText()}
       </h3>
-      
+
       {error && (
         <div style={{ color: '#EF4444', marginBottom: '15px' }}>
           <strong>Error:</strong> {error}
@@ -128,7 +143,7 @@ const FirebaseStatus = () => {
         </div>
       )}
 
-      <button 
+      <button
         onClick={checkFirebaseStatus}
         style={{
           marginTop: '15px',
@@ -137,7 +152,7 @@ const FirebaseStatus = () => {
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         🔄 Recheck

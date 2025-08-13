@@ -19,7 +19,7 @@ export const storage = {
     }
   },
 
-  setVocabulary: (vocabulary) => {
+  setVocabulary: vocabulary => {
     try {
       localStorage.setItem('englishVocabulary', JSON.stringify(vocabulary));
     } catch (error) {
@@ -36,7 +36,7 @@ export const storage = {
     }
   },
 
-  setFavorites: (favorites) => {
+  setFavorites: favorites => {
     try {
       localStorage.setItem('favorites', JSON.stringify([...favorites]));
     } catch (error) {
@@ -53,7 +53,7 @@ export const storage = {
     }
   },
 
-  setApiKey: (apiKey) => {
+  setApiKey: apiKey => {
     try {
       if (apiKey) {
         localStorage.setItem('geminiApiKey', apiKey);
@@ -79,7 +79,7 @@ export const storage = {
     } catch (error) {
       console.error('Error saving hasEverHadData flag:', error);
     }
-  }
+  },
 };
 
 // Generate unique ID
@@ -89,45 +89,55 @@ export const generateId = (existingIds = []) => {
 
 // Check for duplicate words
 export const checkDuplicate = (vocabulary, newWord) => {
-  return vocabulary.find(w => 
-    w.english.toLowerCase() === newWord.toLowerCase().trim()
+  return vocabulary.find(
+    w => w.english.toLowerCase() === newWord.toLowerCase().trim()
   );
 };
 
 // Filter vocabulary
 export const filterVocabulary = (vocabulary, searchTerm) => {
   if (!searchTerm.trim()) return vocabulary;
-  
+
   const term = searchTerm.toLowerCase();
-  return vocabulary.filter(word =>
-    word.english.toLowerCase().includes(term) ||
-    word.vietnamese.toLowerCase().includes(term) ||
-    word.category.toLowerCase().includes(term)
+  return vocabulary.filter(
+    word =>
+      word.english.toLowerCase().includes(term) ||
+      word.vietnamese.toLowerCase().includes(term) ||
+      word.category.toLowerCase().includes(term)
   );
 };
 
 // Get unique categories
-export const getCategories = (vocabulary) => {
+export const getCategories = vocabulary => {
   return [...new Set(vocabulary.map(word => word.category))];
 };
 
 // Get category display info
 export const getCategoryInfo = (categoryId, categories) => {
-  return categories.find(cat => cat.id === categoryId) || {
-    id: categoryId,
-    name: categoryId,
-    icon: '📚',
-    description: 'Danh mục khác'
-  };
+  return (
+    categories.find(cat => cat.id === categoryId) || {
+      id: categoryId,
+      name: categoryId,
+      icon: '📚',
+      description: 'Danh mục khác',
+    }
+  );
 };
 
 // Get category statistics
 export const getCategoryStats = (vocabulary, categories) => {
-  return categories.map(category => ({
-    ...category,
-    count: vocabulary.filter(word => word.category === category.id).length,
-    percentage: Math.round((vocabulary.filter(word => word.category === category.id).length / vocabulary.length) * 100) || 0
-  })).filter(cat => cat.count > 0);
+  return categories
+    .map(category => ({
+      ...category,
+      count: vocabulary.filter(word => word.category === category.id).length,
+      percentage:
+        Math.round(
+          (vocabulary.filter(word => word.category === category.id).length /
+            vocabulary.length) *
+            100
+        ) || 0,
+    }))
+    .filter(cat => cat.count > 0);
 };
 
 // Filter vocabulary by category
@@ -142,42 +152,42 @@ export const getTopCategories = (vocabulary, limit = 5) => {
   vocabulary.forEach(word => {
     categoryCounts[word.category] = (categoryCounts[word.category] || 0) + 1;
   });
-  
+
   return Object.entries(categoryCounts)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, limit)
     .map(([category, count]) => ({ category, count }));
 };
 
 // CEFR Level utilities
-export const mapLevelToDisplay = (level) => {
+export const mapLevelToDisplay = level => {
   const levelMap = {
-    'A1': 'A1 - Khởi đầu',
-    'A2': 'A2 - Cơ bản',
-    'B1': 'B1 - Trung cấp thấp',
-    'B2': 'B2 - Trung cấp cao',
-    'C1': 'C1 - Cao cấp',
-    'C2': 'C2 - Thành thạo',
+    A1: 'A1 - Khởi đầu',
+    A2: 'A2 - Cơ bản',
+    B1: 'B1 - Trung cấp thấp',
+    B2: 'B2 - Trung cấp cao',
+    C1: 'C1 - Cao cấp',
+    C2: 'C2 - Thành thạo',
     // Backward compatibility
-    'beginner': 'A1-A2',
-    'intermediate': 'B1-B2',
-    'advanced': 'C1-C2'
+    beginner: 'A1-A2',
+    intermediate: 'B1-B2',
+    advanced: 'C1-C2',
   };
   return levelMap[level] || level;
 };
 
-export const getLevelColor = (level) => {
+export const getLevelColor = level => {
   const colorMap = {
-    'A1': 'green',
-    'A2': 'green',
-    'B1': 'yellow',
-    'B2': 'orange',
-    'C1': 'red',
-    'C2': 'purple',
+    A1: 'green',
+    A2: 'green',
+    B1: 'yellow',
+    B2: 'orange',
+    C1: 'red',
+    C2: 'purple',
     // Backward compatibility
-    'beginner': 'green',
-    'intermediate': 'yellow',
-    'advanced': 'red'
+    beginner: 'green',
+    intermediate: 'yellow',
+    advanced: 'red',
   };
   return colorMap[level] || 'gray';
 };

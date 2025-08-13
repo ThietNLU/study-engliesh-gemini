@@ -1,18 +1,18 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
+import {
+  collection,
+  doc,
+  getDocs,
   getDoc,
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
+  addDoc,
+  updateDoc,
+  deleteDoc,
   setDoc,
-  query, 
+  query,
   orderBy,
   where,
-  limit,
+  // limit,
   serverTimestamp,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -20,7 +20,7 @@ import { db } from '../config/firebase';
 const COLLECTIONS = {
   VOCABULARY: 'vocabulary',
   FAVORITES: 'favorites',
-  USER_SETTINGS: 'userSettings'
+  USER_SETTINGS: 'userSettings',
 };
 
 // User ID fallback for local development (khi chưa có authentication)
@@ -39,7 +39,7 @@ export const vocabularyService = {
   async getAll() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
       const q = query(
@@ -47,18 +47,20 @@ export const vocabularyService = {
         where('userId', '==', userId),
         orderBy('dateAdded', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const vocabulary = [];
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         vocabulary.push({
           id: doc.id,
           ...doc.data(),
-          dateAdded: doc.data().dateAdded?.toDate?.()?.toISOString() || doc.data().dateAdded
+          dateAdded:
+            doc.data().dateAdded?.toDate?.()?.toISOString() ||
+            doc.data().dateAdded,
         });
       });
-      
+
       return vocabulary;
     } catch (error) {
       console.error('Error getting vocabulary:', error);
@@ -70,25 +72,25 @@ export const vocabularyService = {
   async add(wordData) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
-      
+
       const newWord = {
         ...wordData,
         userId,
         dateAdded: serverTimestamp(),
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
-      
+
       const docRef = await addDoc(vocabularyRef, newWord);
-      
+
       // Return the word with the generated ID
       return {
         id: docRef.id,
         ...newWord,
-        dateAdded: new Date().toISOString()
+        dateAdded: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error adding word:', error);
@@ -100,13 +102,13 @@ export const vocabularyService = {
   async addMultiple(wordsArray) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const batch = writeBatch(db);
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
-      
+
       const addedWords = [];
-      
+
       for (const wordData of wordsArray) {
         const docRef = doc(vocabularyRef);
         const newWord = {
@@ -114,17 +116,17 @@ export const vocabularyService = {
           userId,
           dateAdded: serverTimestamp(),
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
-        
+
         batch.set(docRef, newWord);
         addedWords.push({
           id: docRef.id,
           ...newWord,
-          dateAdded: new Date().toISOString()
+          dateAdded: new Date().toISOString(),
         });
       }
-      
+
       await batch.commit();
       return addedWords;
     } catch (error) {
@@ -137,16 +139,16 @@ export const vocabularyService = {
   async update(wordId, updateData) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       // Ensure wordId is a string
       const wordIdString = String(wordId);
       const wordRef = doc(db, COLLECTIONS.VOCABULARY, wordIdString);
-      
+
       const updatedData = {
         ...updateData,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
-      
+
       await updateDoc(wordRef, updatedData);
       return { id: wordId, ...updatedData };
     } catch (error) {
@@ -159,7 +161,7 @@ export const vocabularyService = {
   async delete(wordId) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       // Ensure wordId is a string
       const wordIdString = String(wordId);
       const wordRef = doc(db, COLLECTIONS.VOCABULARY, wordIdString);
@@ -175,7 +177,7 @@ export const vocabularyService = {
   async getByCategory(category) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
       const q = query(
@@ -184,18 +186,20 @@ export const vocabularyService = {
         where('category', '==', category),
         orderBy('dateAdded', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const vocabulary = [];
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         vocabulary.push({
           id: doc.id,
           ...doc.data(),
-          dateAdded: doc.data().dateAdded?.toDate?.()?.toISOString() || doc.data().dateAdded
+          dateAdded:
+            doc.data().dateAdded?.toDate?.()?.toISOString() ||
+            doc.data().dateAdded,
         });
       });
-      
+
       return vocabulary;
     } catch (error) {
       console.error('Error getting vocabulary by category:', error);
@@ -207,7 +211,7 @@ export const vocabularyService = {
   async getByCEFRLevel(level) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
       const q = query(
@@ -216,18 +220,20 @@ export const vocabularyService = {
         where('level', '==', level),
         orderBy('dateAdded', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const vocabulary = [];
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         vocabulary.push({
           id: doc.id,
           ...doc.data(),
-          dateAdded: doc.data().dateAdded?.toDate?.()?.toISOString() || doc.data().dateAdded
+          dateAdded:
+            doc.data().dateAdded?.toDate?.()?.toISOString() ||
+            doc.data().dateAdded,
         });
       });
-      
+
       return vocabulary;
     } catch (error) {
       console.error('Error getting vocabulary by CEFR level:', error);
@@ -239,18 +245,18 @@ export const vocabularyService = {
   async clear() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
       const q = query(vocabularyRef, where('userId', '==', userId));
-      
+
       const querySnapshot = await getDocs(q);
       const batch = writeBatch(db);
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       await batch.commit();
       console.log('All vocabulary cleared successfully!');
       return true;
@@ -258,7 +264,7 @@ export const vocabularyService = {
       console.error('Error clearing vocabulary:', error);
       throw error;
     }
-  }
+  },
 };
 
 // ===== FAVORITES OPERATIONS =====
@@ -268,21 +274,18 @@ export const favoritesService = {
   async getAll() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const favoritesRef = collection(db, COLLECTIONS.FAVORITES);
-      const q = query(
-        favoritesRef,
-        where('userId', '==', userId)
-      );
-      
+      const q = query(favoritesRef, where('userId', '==', userId));
+
       const querySnapshot = await getDocs(q);
       const favorites = new Set();
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         favorites.add(doc.data().wordId);
       });
-      
+
       return favorites;
     } catch (error) {
       console.error('Error getting favorites:', error);
@@ -294,16 +297,16 @@ export const favoritesService = {
   async add(wordId) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const favoritesRef = collection(db, COLLECTIONS.FAVORITES);
-      
+
       const favoriteData = {
         userId,
         wordId,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       };
-      
+
       await addDoc(favoritesRef, favoriteData);
       return wordId;
     } catch (error) {
@@ -316,7 +319,7 @@ export const favoritesService = {
   async remove(wordId) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const favoritesRef = collection(db, COLLECTIONS.FAVORITES);
       const q = query(
@@ -324,14 +327,14 @@ export const favoritesService = {
         where('userId', '==', userId),
         where('wordId', '==', wordId)
       );
-      
+
       const querySnapshot = await getDocs(q);
       const batch = writeBatch(db);
-      
-      querySnapshot.forEach((doc) => {
+
+      querySnapshot.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       await batch.commit();
       return wordId;
     } catch (error) {
@@ -344,7 +347,7 @@ export const favoritesService = {
   async toggle(wordId) {
     try {
       const favorites = await this.getAll();
-      
+
       if (favorites.has(wordId)) {
         await this.remove(wordId);
         return false;
@@ -356,7 +359,7 @@ export const favoritesService = {
       console.error('Error toggling favorite:', error);
       throw error;
     }
-  }
+  },
 };
 
 // ===== USER SETTINGS OPERATIONS =====
@@ -366,25 +369,25 @@ export const userSettingsService = {
   async initialize() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const settingsRef = doc(db, COLLECTIONS.USER_SETTINGS, userId);
       const docSnap = await getDoc(settingsRef);
-      
+
       if (!docSnap.exists()) {
         const defaultSettings = {
           apiKey: '',
           theme: 'light',
           language: 'vi',
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
-        
+
         await setDoc(settingsRef, defaultSettings);
         console.log('User settings initialized with default values');
         return defaultSettings;
       }
-      
+
       return docSnap.data();
     } catch (error) {
       console.error('Error initializing user settings:', error);
@@ -396,11 +399,11 @@ export const userSettingsService = {
   async get() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const settingsRef = doc(db, COLLECTIONS.USER_SETTINGS, userId);
       const docSnap = await getDoc(settingsRef);
-      
+
       if (docSnap.exists()) {
         return docSnap.data();
       } else {
@@ -417,20 +420,20 @@ export const userSettingsService = {
   async update(settingsData) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const settingsRef = doc(db, COLLECTIONS.USER_SETTINGS, userId);
-      
+
       // Get current settings first
       const currentDoc = await getDoc(settingsRef);
       const currentSettings = currentDoc.exists() ? currentDoc.data() : {};
-      
+
       const updatedSettings = {
         ...currentSettings,
         ...settingsData,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
-      
+
       // Use setDoc to create or update the document
       await setDoc(settingsRef, updatedSettings, { merge: true });
       return updatedSettings;
@@ -444,16 +447,16 @@ export const userSettingsService = {
   async setApiKey(apiKey) {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const settingsRef = doc(db, COLLECTIONS.USER_SETTINGS, userId);
-      
+
       // Use setDoc with merge to create or update
       const settingsData = {
         apiKey,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
-      
+
       await setDoc(settingsRef, settingsData, { merge: true });
       return { apiKey };
     } catch (error) {
@@ -471,7 +474,7 @@ export const userSettingsService = {
       console.error('Error getting API key:', error);
       return '';
     }
-  }
+  },
 };
 
 // ===== DATA MIGRATION AND BACKUP =====
@@ -481,19 +484,25 @@ export const migrationService = {
   async importFromLocalStorage() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       // Get data from Local Storage
-      const vocabularyData = JSON.parse(localStorage.getItem('englishVocabulary') || '[]');
-      const favoritesData = JSON.parse(localStorage.getItem('favorites') || '[]');
+      const vocabularyData = JSON.parse(
+        localStorage.getItem('englishVocabulary') || '[]'
+      );
+      const favoritesData = JSON.parse(
+        localStorage.getItem('favorites') || '[]'
+      );
       const apiKey = localStorage.getItem('geminiApiKey') || '';
-      
-      console.log(`Importing ${vocabularyData.length} words and ${favoritesData.length} favorites...`);
-      
+
+      console.log(
+        `Importing ${vocabularyData.length} words and ${favoritesData.length} favorites...`
+      );
+
       // Import vocabulary
       if (vocabularyData.length > 0) {
         await vocabularyService.addMultiple(vocabularyData);
       }
-      
+
       // Import favorites
       for (const wordId of favoritesData) {
         try {
@@ -502,12 +511,12 @@ export const migrationService = {
           console.warn(`Failed to import favorite ${wordId}:`, error);
         }
       }
-      
+
       // Import API key
       if (apiKey) {
         await userSettingsService.setApiKey(apiKey);
       }
-      
+
       console.log('Data migration completed successfully!');
       return true;
     } catch (error) {
@@ -520,16 +529,16 @@ export const migrationService = {
   async exportAllData() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const vocabulary = await vocabularyService.getAll();
       const favorites = await favoritesService.getAll();
       const settings = await userSettingsService.get();
-      
+
       return {
         vocabulary,
         favorites: Array.from(favorites),
         settings,
-        exportDate: new Date().toISOString()
+        exportDate: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -541,32 +550,32 @@ export const migrationService = {
   async clearAllData() {
     try {
       if (!db) throw new Error('Firebase not initialized');
-      
+
       const userId = getCurrentUserId();
       const batch = writeBatch(db);
-      
+
       // Delete all vocabulary
       const vocabularyRef = collection(db, COLLECTIONS.VOCABULARY);
       const vocabQuery = query(vocabularyRef, where('userId', '==', userId));
       const vocabSnapshot = await getDocs(vocabQuery);
-      
-      vocabSnapshot.forEach((doc) => {
+
+      vocabSnapshot.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       // Delete all favorites
       const favoritesRef = collection(db, COLLECTIONS.FAVORITES);
       const favQuery = query(favoritesRef, where('userId', '==', userId));
       const favSnapshot = await getDocs(favQuery);
-      
-      favSnapshot.forEach((doc) => {
+
+      favSnapshot.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       // Delete user settings
       const settingsRef = doc(db, COLLECTIONS.USER_SETTINGS, userId);
       batch.delete(settingsRef);
-      
+
       await batch.commit();
       console.log('All user data cleared successfully!');
       return true;
@@ -574,5 +583,5 @@ export const migrationService = {
       console.error('Error clearing data:', error);
       throw error;
     }
-  }
+  },
 };

@@ -1,0 +1,40 @@
+# Build output
+build/
+dist/
+*.min.js
+*.min.css
+
+# Dependencies
+node_modules/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Firebase
+.firebase/
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+
+# Package manager
+package-lock.json
+yarn.lock
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
