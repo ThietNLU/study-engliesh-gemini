@@ -83,7 +83,6 @@ export const useFilteredVocabulary = searchTerm => {
   const getFilteredVocabulary = useDataStore(
     state => state.getFilteredVocabulary
   );
-  const vocabulary = useDataStore(state => state.vocabulary);
 
   return getFilteredVocabulary(searchTerm);
 };
@@ -91,8 +90,6 @@ export const useFilteredVocabulary = searchTerm => {
 // Hook để quản lý vocabulary statistics
 export const useVocabularyStats = () => {
   const getVocabularyStats = useDataStore(state => state.getVocabularyStats);
-  const vocabulary = useDataStore(state => state.vocabulary);
-  const favorites = useDataStore(state => state.favorites);
 
   return getVocabularyStats();
 };
