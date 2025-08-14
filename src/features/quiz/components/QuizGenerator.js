@@ -11,6 +11,7 @@ import {
 import quizGeneratorService from '../services/quizGeneratorService';
 import { useApiKey } from '../../../shared/hooks/useApiKey';
 import NotificationToast from '../../../shared/ui/NotificationToast';
+import QuizPlayer from './QuizPlayer';
 
 const QuizGenerator = () => {
   // State management
@@ -29,6 +30,8 @@ const QuizGenerator = () => {
   const [showTopicSelector, setShowTopicSelector] = useState(false);
   const [customTopic, setCustomTopic] = useState('');
   const [notification, setNotification] = useState(null);
+  const [lastError, setLastError] = useState(null);
+  const [showPlayer, setShowPlayer] = useState(false);
 
   const { apiKey } = useApiKey();
 
@@ -98,6 +101,8 @@ const QuizGenerator = () => {
       console.log('Quiz generated successfully:', quiz);
 
       setGeneratedQuiz(quiz);
+      setLastError(null);
+      setShowPlayer(true);
       console.log('State updated with generated quiz:', quiz);
 
       showNotification(
@@ -107,6 +112,7 @@ const QuizGenerator = () => {
     } catch (error) {
       console.error('Quiz generation error:', error);
       showNotification(`Lỗi tạo quiz: ${error.message}`, 'error');
+      setLastError(String(error?.message || error));
     } finally {
       setIsGenerating(false);
     }
@@ -404,9 +410,37 @@ const QuizGenerator = () => {
           )}
         </div>
 
-        {/* Quiz Display Panel */}
+        {/* Quiz Display Panel */
+        /* If playing, render interactive player; otherwise show preview */}
         <div className='lg:col-span-2'>
-          {(() => {
+          {generatedQuiz && showPlayer && (
+            <div className='bg-white rounded-xl shadow-lg p-0'>
+              <QuizPlayer
+                quiz={generatedQuiz}
+                onExit={() => setShowPlayer(false)}
+                onComplete={results => {
+                  try {
+                    showNotification(
+                      `Hoàn thành: ${results.correct}/${generatedQuiz.questions.length} câu đúng (${results.percentage.toFixed(0)}%)`,
+                      'success'
+                    );
+                  } catch (e) {
+                    // no-op
+                  }
+                }}
+              />
+            </div>
+          )}
+          {lastError && (
+            <div className='mb-4 p-4 border border-red-300 bg-red-50 text-red-800 rounded-lg'>
+              <div className='font-semibold mb-1'>Lỗi khi tạo quiz</div>
+              <pre className='whitespace-pre-wrap break-words text-sm'>
+                {lastError}
+              </pre>
+            </div>
+          )}
+          {!showPlayer &&
+          (() => {
             console.log('Render check - generatedQuiz:', generatedQuiz);
             return generatedQuiz;
           })() ? (
@@ -417,6 +451,13 @@ const QuizGenerator = () => {
                   Quiz được tạo
                 </h2>
                 <div className='flex space-x-2'>
+                  <button
+                    onClick={() => setShowPlayer(true)}
+                    className='px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center'
+                  >
+                    <Play size={16} className='mr-1' />
+                    Bắt đầu làm
+                  </button>
                   <button
                     onClick={() => {
                       const name = prompt('Nhập tên quiz:');

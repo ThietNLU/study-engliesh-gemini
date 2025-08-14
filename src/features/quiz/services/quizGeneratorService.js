@@ -40,14 +40,17 @@ class QuizGeneratorService {
               parts: [{ text: prompt }],
             },
           ],
+          // System instruction (camelCase per REST spec)
           systemInstruction: {
             parts: [{ text: this.getSystemInstruction() }],
           },
+          // safetySettings removed to avoid API 400 for unsupported categories on this model/version
           generationConfig: {
             temperature: 0.7,
             topK: 40,
             topP: 0.95,
             maxOutputTokens: 4096,
+            responseMimeType: 'application/json',
           },
         }),
       });
@@ -69,7 +72,11 @@ class QuizGeneratorService {
         } else if (response.status === 429) {
           throw new Error('Đã vượt quá giới hạn API. Vui lòng thử lại sau');
         } else if (response.status === 400) {
-          throw new Error('Yêu cầu không hợp lệ. Vui lòng kiểm tra cấu hình');
+          // Surface more context for debugging 400s
+          throw new Error(
+            'Yêu cầu không hợp lệ (400). Kiểm tra cấu hình và lược sử log Network. Chi tiết: ' +
+              errorText.slice(0, 300)
+          );
         } else {
           throw new Error(
             `API Error: ${response.status} - ${response.statusText}`
@@ -89,7 +96,7 @@ class QuizGeneratorService {
         throw new Error('Response từ AI không hợp lệ - không có nội dung');
       }
 
-      const aiText = data.candidates[0].content.parts[0].text;
+      const aiText = data.candidates[0].content.parts?.[0]?.text || '';
       console.log('AI response text:', aiText);
 
       return this.parseQuizResponse(aiText);
@@ -414,29 +421,57 @@ START JSON:`;
 
   parseQuizResponse(aiText) {
     try {
+      console.log('Raw AI response:', aiText.substring(0, 500) + '...');
+
       // Clean the response text
       let cleanedText = aiText.trim();
 
-      // Remove markdown code blocks
+      // Remove markdown code blocks and any wrapper text
       cleanedText = cleanedText
         .replace(/```json\s*/gi, '')
-        .replace(/```\s*$/g, '');
-      cleanedText = cleanedText.replace(/```\s*/g, '');
+        .replace(/```\s*$/g, '')
+        .replace(/```\s*/g, '')
+        .replace(/^[^{]*/, '') // Remove any text before first {
+        .replace(/}[^}]*$/, '}'); // Remove any text after last }
 
-      // Find JSON boundaries
+      // More aggressive JSON extraction - find the main JSON object
       const jsonStart = cleanedText.indexOf('{');
       const jsonEnd = cleanedText.lastIndexOf('}') + 1;
 
-      if (jsonStart === -1 || jsonEnd === 0) {
-        console.error('No JSON found in quiz response:', aiText);
-        throw new Error('Không tìm thấy JSON trong phản hồi từ AI');
+      if (jsonStart === -1 || jsonEnd === 0 || jsonEnd <= jsonStart) {
+        console.error('No valid JSON boundaries found in response:', aiText);
+        throw new Error('Không tìm thấy JSON hợp lệ trong phản hồi từ AI');
       }
 
       let jsonString = cleanedText.substring(jsonStart, jsonEnd);
-      console.log('Extracted Quiz JSON:', jsonString);
+      console.log(
+        'Extracted JSON string (first 300 chars):',
+        jsonString.substring(0, 300)
+      );
 
-      // Fix common JSON formatting issues
-      jsonString = this.fixJsonFormat(jsonString);
+      // Apply multiple rounds of JSON fixing
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          jsonString = this.fixJsonFormat(jsonString);
+
+          // Test parse
+          JSON.parse(jsonString);
+          console.log('JSON parsed successfully on attempt', attempt + 1);
+          break;
+        } catch (parseError) {
+          console.warn(
+            `JSON parse attempt ${attempt + 1} failed:`,
+            parseError.message
+          );
+          if (attempt === 2) {
+            // Last attempt - try even more aggressive fixes
+            jsonString = jsonString
+              .replace(/([^",\s]+):/g, '"$1":') // Quote all unquoted keys
+              .replace(/:\s*([^",[{][^,\]}]*?)(\s*[,\]}])/g, ': "$1"$2') // Quote unquoted values
+              .replace(/:\s*"(true|false|null|\d+(?:\.\d+)?)"/gi, ': $1'); // Unquote primitives
+          }
+        }
+      }
 
       const quizData = JSON.parse(jsonString);
 
@@ -481,27 +516,85 @@ START JSON:`;
     } catch (error) {
       if (error instanceof SyntaxError) {
         console.error('Quiz JSON Parse Error:', error);
-        console.error('Raw AI Text:', aiText);
-        throw new Error(`Không thể phân tích JSON từ AI: ${error.message}`);
+        console.error('Problematic JSON string:', error.message);
+        console.error(
+          'Raw AI Text (first 1000 chars):',
+          aiText.substring(0, 1000)
+        );
+        throw new Error(
+          `Không thể phân tích JSON từ AI: ${error.message}. Vui lòng thử lại hoặc thay đổi cấu hình.`
+        );
       }
       throw error;
     }
   }
 
   fixJsonFormat(jsonString) {
-    return (
-      jsonString
-        // Remove trailing commas before closing braces/brackets
-        .replace(/,(\s*[}\]])/g, '$1')
-        // Ensure property names are properly quoted
-        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?(\s*):/g, '"$2"$4:')
-        // Convert single quotes to double quotes for strings
-        .replace(/:\s*'([^']*)'/g, ': "$1"')
+    let fixed = jsonString;
+
+    try {
+      // First pass: basic cleanup
+      fixed = fixed
+        // Remove comments and non-JSON text
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/.*$/gm, '')
         // Clean up whitespace
         .replace(/\n/g, ' ')
         .replace(/\t/g, ' ')
         .replace(/\s+/g, ' ')
-    );
+        .trim();
+
+      // Second pass: fix JSON structure
+      fixed = fixed
+        // Remove trailing commas before closing braces/brackets
+        .replace(/,(\s*[}\]])/g, '$1')
+        // Ensure property names are properly quoted
+        .replace(/(\{|,)(\s*)([a-zA-Z0-9_]+)(\s*):/g, '$1"$3":')
+        // Convert single quotes to double quotes for strings
+        .replace(/:\s*'([^']*)'/g, ': "$1"')
+        // Fix unquoted string values (basic heuristic)
+        .replace(
+          /:\s*([a-zA-Z][a-zA-Z0-9\s]*[a-zA-Z0-9])(\s*[,}\]])/g,
+          ': "$1"$2'
+        )
+        // Normalize booleans and nulls that got quoted
+        .replace(/:\s*"(true|false|null)"/gi, ': $1')
+        // Fix numbers that got quoted
+        .replace(/:\s*"(\d+(?:\.\d+)?)"/g, ': $1');
+
+      // Third pass: validate and attempt to auto-fix common issues
+      // Try to parse - if it fails, we'll do more aggressive fixes
+      try {
+        JSON.parse(fixed);
+        return fixed;
+      } catch (parseError) {
+        console.warn(
+          'Initial JSON parse failed, attempting fixes:',
+          parseError.message
+        );
+
+        // More aggressive fixes for common AI mistakes
+        fixed = fixed
+          // Fix missing quotes around object keys
+          .replace(/(\{|,)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+          // Fix trailing commas again (might have been introduced)
+          .replace(/,(\s*[}\]])/g, '$1')
+          // Fix double quotes inside string values
+          .replace(
+            /:\s*"([^"]*)"([^"]*)"([^"]*)"(\s*[,}\]])/g,
+            ': "$1\\"$2\\"$3"$4'
+          )
+          // Remove extra commas
+          .replace(/,+/g, ',')
+          // Remove comma before first property
+          .replace(/\{\s*,/g, '{');
+
+        return fixed;
+      }
+    } catch (error) {
+      console.warn('JSON fixing failed, returning original:', error);
+      return jsonString;
+    }
   }
 
   // Ensure AI responses conform to the expected schema used by UI/Player
