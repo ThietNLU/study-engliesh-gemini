@@ -21,10 +21,14 @@ class QuizGeneratorService {
       throw new Error('Vui lòng nhập API Key của Gemini');
     }
 
+    console.log('Validating config:', config);
     this.validateConfig(config);
+
     const prompt = this.createQuizPrompt(config);
+    console.log('Generated prompt:', prompt);
 
     try {
+      console.log('Making API request to Gemini...');
       const response = await fetch(`${this.baseUrl}?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -48,10 +52,29 @@ class QuizGeneratorService {
         }),
       });
 
+      console.log('API response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Quiz Generation API Error:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
+        console.error('Quiz Generation API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText,
+        });
+
+        if (response.status === 403) {
+          throw new Error(
+            'API Key không hợp lệ hoặc không có quyền truy cập Gemini API'
+          );
+        } else if (response.status === 429) {
+          throw new Error('Đã vượt quá giới hạn API. Vui lòng thử lại sau');
+        } else if (response.status === 400) {
+          throw new Error('Yêu cầu không hợp lệ. Vui lòng kiểm tra cấu hình');
+        } else {
+          throw new Error(
+            `API Error: ${response.status} - ${response.statusText}`
+          );
+        }
       }
 
       const data = await response.json();
@@ -62,14 +85,22 @@ class QuizGeneratorService {
         !data.candidates[0] ||
         !data.candidates[0].content
       ) {
-        throw new Error('Response từ AI không hợp lệ');
+        console.error('Invalid response structure:', data);
+        throw new Error('Response từ AI không hợp lệ - không có nội dung');
       }
 
       const aiText = data.candidates[0].content.parts[0].text;
+      console.log('AI response text:', aiText);
+
       return this.parseQuizResponse(aiText);
     } catch (error) {
       console.error('Error generating quiz:', error);
-      throw new Error(`Lỗi tạo quiz: ${error.message}`);
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error(
+          'Không thể kết nối với Gemini API. Kiểm tra kết nối internet'
+        );
+      }
+      throw error;
     }
   }
 
@@ -101,7 +132,7 @@ OUTPUT FORMAT:
   validateConfig(config) {
     const requiredFields = ['topic', 'level', 'type'];
     const missingFields = requiredFields.filter(field => !config[field]);
-    
+
     if (missingFields.length > 0) {
       throw new Error(`Thiếu thông tin: ${missingFields.join(', ')}`);
     }
@@ -118,7 +149,7 @@ OUTPUT FORMAT:
       'true_false',
       'matching',
       'ordering',
-      'gap_fill'
+      'gap_fill',
     ];
     if (!validTypes.includes(config.type)) {
       throw new Error('Type phải là một trong: ' + validTypes.join(', '));
@@ -126,16 +157,9 @@ OUTPUT FORMAT:
   }
 
   createQuizPrompt(config) {
-    const {
-      topic,
-      level,
-      type,
-      count = 10,
-      focus,
-      vocabulary = []
-    } = config;
+    const { topic, level, type, count = 10, focus, vocabulary = [] } = config;
 
-    let basePrompt = `Generate ${count} English learning quiz questions with the following specifications:
+    const basePrompt = `Generate ${count} English learning quiz questions with the following specifications:
 
 TOPIC: ${topic}
 LEVEL: ${level} (CEFR)
@@ -418,7 +442,9 @@ START JSON:`;
 
       if (!quizData.questions || !Array.isArray(quizData.questions)) {
         console.error('Invalid quiz structure:', quizData);
-        throw new Error('Format dữ liệu quiz không đúng - không tìm thấy mảng questions');
+        throw new Error(
+          'Format dữ liệu quiz không đúng - không tìm thấy mảng questions'
+        );
       }
 
       if (quizData.questions.length === 0) {
@@ -438,14 +464,19 @@ START JSON:`;
         throw new Error('Không có câu hỏi hợp lệ nào từ AI');
       }
 
+      // Normalize questions (fix MCQ index base, boolean values, ensure arrays)
+      const normalizedQuestions = validQuestions.map(q =>
+        this.normalizeQuestion(q)
+      );
+
       return {
-        questions: validQuestions,
+        questions: normalizedQuestions,
         metadata: {
           generatedAt: new Date().toISOString(),
-          totalQuestions: validQuestions.length,
-          questionTypes: [...new Set(validQuestions.map(q => q.type))],
-          levels: [...new Set(validQuestions.map(q => q.level))],
-        }
+          totalQuestions: normalizedQuestions.length,
+          questionTypes: [...new Set(normalizedQuestions.map(q => q.type))],
+          levels: [...new Set(normalizedQuestions.map(q => q.level))],
+        },
       };
     } catch (error) {
       if (error instanceof SyntaxError) {
@@ -458,17 +489,110 @@ START JSON:`;
   }
 
   fixJsonFormat(jsonString) {
-    return jsonString
-      // Remove trailing commas before closing braces/brackets
-      .replace(/,(\s*[}\]])/g, '$1')
-      // Ensure property names are properly quoted
-      .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?(\s*):/g, '"$2"$4:')
-      // Convert single quotes to double quotes for strings
-      .replace(/:\s*'([^']*)'/g, ': "$1"')
-      // Clean up whitespace
-      .replace(/\n/g, ' ')
-      .replace(/\t/g, ' ')
-      .replace(/\s+/g, ' ');
+    return (
+      jsonString
+        // Remove trailing commas before closing braces/brackets
+        .replace(/,(\s*[}\]])/g, '$1')
+        // Ensure property names are properly quoted
+        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?(\s*):/g, '"$2"$4:')
+        // Convert single quotes to double quotes for strings
+        .replace(/:\s*'([^']*)'/g, ': "$1"')
+        // Clean up whitespace
+        .replace(/\n/g, ' ')
+        .replace(/\t/g, ' ')
+        .replace(/\s+/g, ' ')
+    );
+  }
+
+  // Ensure AI responses conform to the expected schema used by UI/Player
+  normalizeQuestion(question) {
+    const q = { ...question };
+
+    // Standardize type to known set (lowercase, underscores)
+    if (typeof q.type === 'string') {
+      q.type = q.type.toLowerCase().replace(/[-\s]/g, '_');
+    }
+
+    // Points default
+    if (typeof q.points !== 'number' || Number.isNaN(q.points)) q.points = 1;
+
+    // Multiple choice: ensure 0-based index and options array
+    if (q.type === 'multiple_choice') {
+      if (!Array.isArray(q.options)) q.options = [];
+
+      // Convert letter answers (e.g., 'A'|'B'|...) to 0-based index
+      if (typeof q.correct_answer === 'string') {
+        const letter = q.correct_answer.trim().toUpperCase();
+        const idx = 'ABCD'.indexOf(letter);
+        if (idx >= 0) q.correct_answer = idx;
+      }
+
+      // Convert 1-based to 0-based if necessary
+      if (
+        typeof q.correct_answer === 'number' &&
+        Array.isArray(q.options) &&
+        q.options.length > 0
+      ) {
+        // If value equals options length (out of range) or > 0-based, try to shift
+        if (q.correct_answer >= 1 && q.correct_answer <= q.options.length - 1) {
+          // Heuristic: many LLMs return 0-based already; only shift if there is evidence of 1-based
+          // We'll detect classic off-by-one: if no option matches when previewing, the UI still works.
+          // Safer approach: if any example value is 1 and options length is 4, assume 0-3; keep as-is.
+        }
+
+        // If value equals options length (e.g., 4 with 4 options), shift to 3
+        if (q.correct_answer === q.options.length) {
+          q.correct_answer = q.correct_answer - 1;
+        }
+      }
+
+      // Clamp index into range
+      if (typeof q.correct_answer === 'number' && q.options.length > 0) {
+        if (q.correct_answer < 0) q.correct_answer = 0;
+        if (q.correct_answer >= q.options.length)
+          q.correct_answer = q.options.length - 1;
+      }
+    }
+
+    // True/False: ensure boolean
+    if (q.type === 'true_false') {
+      if (typeof q.correct_answer === 'string') {
+        const s = q.correct_answer.trim().toLowerCase();
+        if (s === 'true' || s === 't') q.correct_answer = true;
+        if (s === 'false' || s === 'f') q.correct_answer = false;
+      }
+      if (typeof q.correct_answer !== 'boolean') {
+        // default to false if unclear
+        q.correct_answer = false;
+      }
+    }
+
+    // Fill blank: ensure acceptable_answers contains correct_answer
+    if (q.type === 'fill_blank') {
+      if (!Array.isArray(q.acceptable_answers)) q.acceptable_answers = [];
+      if (
+        typeof q.correct_answer === 'string' &&
+        !q.acceptable_answers.includes(q.correct_answer)
+      ) {
+        q.acceptable_answers = [q.correct_answer, ...q.acceptable_answers];
+      }
+    }
+
+    // Matching/Ordering/Gap fill: ensure arrays
+    if (q.type === 'matching') {
+      if (!Array.isArray(q.left_column)) q.left_column = [];
+      if (!Array.isArray(q.right_column)) q.right_column = [];
+      if (!Array.isArray(q.correct_matches)) q.correct_matches = [];
+    }
+    if (q.type === 'ordering') {
+      if (!Array.isArray(q.scrambled_words)) q.scrambled_words = [];
+      if (!Array.isArray(q.correct_order)) q.correct_order = [];
+    }
+    if (q.type === 'gap_fill') {
+      if (!Array.isArray(q.gaps)) q.gaps = [];
+    }
+
+    return q;
   }
 
   // Helper method to get available question types
@@ -478,44 +602,44 @@ START JSON:`;
         id: 'multiple_choice',
         name: 'Trắc nghiệm',
         description: 'Chọn đáp án đúng từ 4 lựa chọn',
-        icon: '☐'
+        icon: '☐',
       },
       {
         id: 'fill_blank',
         name: 'Điền từ',
         description: 'Điền từ vào chỗ trống',
-        icon: '___'
+        icon: '___',
       },
       {
         id: 'sentence_transformation',
         name: 'Chuyển đổi câu',
         description: 'Viết lại câu với từ gợi ý',
-        icon: '↔'
+        icon: '↔',
       },
       {
         id: 'true_false',
         name: 'Đúng/Sai',
         description: 'Xác định câu đúng hay sai',
-        icon: '✓✗'
+        icon: '✓✗',
       },
       {
         id: 'matching',
         name: 'Nối từ',
         description: 'Nối từ với nghĩa tương ứng',
-        icon: '⟷'
+        icon: '⟷',
       },
       {
         id: 'ordering',
         name: 'Sắp xếp câu',
         description: 'Sắp xếp từ thành câu đúng',
-        icon: '⇅'
+        icon: '⇅',
       },
       {
         id: 'gap_fill',
         name: 'Điền đoạn văn',
         description: 'Điền nhiều từ vào đoạn văn',
-        icon: '📝'
-      }
+        icon: '📝',
+      },
     ];
   }
 
@@ -527,118 +651,142 @@ START JSON:`;
         id: 'present_tenses',
         name: 'Present Tenses',
         category: 'grammar',
-        description: 'Present Simple, Continuous, Perfect'
+        description: 'Present Simple, Continuous, Perfect',
       },
       {
         id: 'past_tenses',
         name: 'Past Tenses',
         category: 'grammar',
-        description: 'Past Simple, Continuous, Perfect'
+        description: 'Past Simple, Continuous, Perfect',
       },
       {
         id: 'future_tenses',
         name: 'Future Tenses',
         category: 'grammar',
-        description: 'Will, Going to, Present Continuous for future'
+        description: 'Will, Going to, Present Continuous for future',
       },
       {
         id: 'conditionals',
         name: 'Conditionals',
         category: 'grammar',
-        description: 'If clauses, Zero to Third conditionals'
+        description: 'If clauses, Zero to Third conditionals',
       },
       {
         id: 'passive_voice',
         name: 'Passive Voice',
         category: 'grammar',
-        description: 'Active to passive transformations'
+        description: 'Active to passive transformations',
       },
       {
         id: 'reported_speech',
         name: 'Reported Speech',
         category: 'grammar',
-        description: 'Direct to indirect speech'
+        description: 'Direct to indirect speech',
       },
       {
         id: 'modal_verbs',
         name: 'Modal Verbs',
         category: 'grammar',
-        description: 'Can, could, should, must, might'
+        description: 'Can, could, should, must, might',
       },
       // Vocabulary topics
       {
         id: 'business_english',
         name: 'Business English',
         category: 'vocabulary',
-        description: 'Professional and workplace vocabulary'
+        description: 'Professional and workplace vocabulary',
       },
       {
         id: 'travel_tourism',
         name: 'Travel & Tourism',
         category: 'vocabulary',
-        description: 'Travel-related vocabulary'
+        description: 'Travel-related vocabulary',
       },
       {
         id: 'technology',
         name: 'Technology',
         category: 'vocabulary',
-        description: 'Tech and digital vocabulary'
+        description: 'Tech and digital vocabulary',
       },
       {
         id: 'health_medicine',
         name: 'Health & Medicine',
         category: 'vocabulary',
-        description: 'Medical and health vocabulary'
+        description: 'Medical and health vocabulary',
       },
       {
         id: 'environment',
         name: 'Environment',
         category: 'vocabulary',
-        description: 'Environmental and nature vocabulary'
+        description: 'Environmental and nature vocabulary',
       },
       {
         id: 'education',
         name: 'Education',
         category: 'vocabulary',
-        description: 'Academic and educational vocabulary'
+        description: 'Academic and educational vocabulary',
       },
       // Theme-based topics
       {
         id: 'daily_life',
         name: 'Daily Life',
         category: 'theme',
-        description: 'Everyday situations and activities'
+        description: 'Everyday situations and activities',
       },
       {
         id: 'food_cooking',
         name: 'Food & Cooking',
         category: 'theme',
-        description: 'Culinary vocabulary and expressions'
+        description: 'Culinary vocabulary and expressions',
       },
       {
         id: 'sports_fitness',
         name: 'Sports & Fitness',
         category: 'theme',
-        description: 'Sports and exercise vocabulary'
+        description: 'Sports and exercise vocabulary',
       },
       {
         id: 'entertainment',
         name: 'Entertainment',
         category: 'theme',
-        description: 'Movies, music, books, games'
-      }
+        description: 'Movies, music, books, games',
+      },
     ];
   }
 
   // Helper method to get difficulty levels
   getLevels() {
     return [
-      { id: 'A1', name: 'Beginner (A1)', description: 'Basic vocabulary and simple grammar' },
-      { id: 'A2', name: 'Elementary (A2)', description: 'Common situations and topics' },
-      { id: 'B1', name: 'Intermediate (B1)', description: 'Complex ideas and situations' },
-      { id: 'B2', name: 'Upper-Intermediate (B2)', description: 'Abstract topics and nuanced language' },
-      { id: 'C1', name: 'Advanced (C1)', description: 'Complex texts and implicit meaning' },
-      { id: 'C2', name: 'Proficient (C2)', description: 'Native-like fluency and understanding' }
+      {
+        id: 'A1',
+        name: 'Beginner (A1)',
+        description: 'Basic vocabulary and simple grammar',
+      },
+      {
+        id: 'A2',
+        name: 'Elementary (A2)',
+        description: 'Common situations and topics',
+      },
+      {
+        id: 'B1',
+        name: 'Intermediate (B1)',
+        description: 'Complex ideas and situations',
+      },
+      {
+        id: 'B2',
+        name: 'Upper-Intermediate (B2)',
+        description: 'Abstract topics and nuanced language',
+      },
+      {
+        id: 'C1',
+        name: 'Advanced (C1)',
+        description: 'Complex texts and implicit meaning',
+      },
+      {
+        id: 'C2',
+        name: 'Proficient (C2)',
+        description: 'Native-like fluency and understanding',
+      },
     ];
   }
 }

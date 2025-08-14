@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Study English with AI — Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11162a;
+      --ink: #e9eefc;
+      --muted: #9fb3ff;
+      --accent: #6ea8fe;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .poster {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 8px;
+      background: linear-gradient(135deg, #0b1020, #14224a);
+      border: 1px solid #1e2b54;
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+
+    .title {
+      font-weight: 800;
+      font-size: 28px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid #1e2b54;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .span-4 {
+      grid-column: span 4;
+    }
+
+    .span-6 {
+      grid-column: span 6;
+    }
+
+    .span-8 {
+      grid-column: span 8;
+    }
+
+    .span-12 {
+      grid-column: span 12;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .kpi {
+      display: grid;
+      grid-auto-flow: column;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .kpi .chip {
+      background: #162043;
+      border: 1px solid #223578;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .mermaid {
+      background: #0f1733;
+      border: 1px solid #1c2b5f;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .footer {
+      color: #9bb0ff;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #111;
+      }
+
+      .hero,
+      .card,
+      .mermaid {
+        border-color: #ddd;
+        background: #fff;
+      }
+
+      a {
+        color: #06c;
+      }
+
+      .footer {
+        color: #444;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="poster">
+    <section class="hero">
+      <div class="title">Study English with AI — Smart Vocabulary & Quiz</div>
+      <div class="muted">React • Zustand • Tailwind • Firebase • Google Gemini</div>
+      <div class="kpi">
+        <div class="chip">CEFR A1–C2</div>
+        <div class="chip">7+ loại câu hỏi</div>
+        <div class="chip">Spaced Repetition (SM‑2)</div>
+        <div class="chip">Firestore / LocalStorage fallback</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-6">
+        <h2>Kiến trúc tổng quan</h2>
+        <div class="mermaid">
+          flowchart TB
+          User((Người dùng)) --> UI[React UI Components]
+          UI --> Stores[Zustand Stores]
+          Stores <--> Services[Services Layer]
+
+            subgraph Integrations
+            Gemini[Google Gemini API]
+            subgraph Firebase
+            Auth[(Auth)]
+            Firestore[(Firestore)]
+            Hosting[(Hosting)]
+            end
+            Local[(LocalStorage)]
+            end
+
+            Services -->|generateContent| Gemini
+            Services -->|SDK| Firestore
+            Services -->|SDK| Auth
+            Services -->|fallback| Local
+
+            Build[CRA Build] --> Hosting
+            Hosting -.-> UI
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Luồng: AI Quiz Generator</h2>
+        <div class="mermaid">
+          sequenceDiagram
+          participant U as User
+          participant UI as QuizModeAdvanced
+          participant S as quizGeneratorService
+          participant G as Gemini API
+
+          U->>UI: Chọn cấu hình quiz
+          UI->>S: generateQuiz(config, apiKey)
+          S->>G: POST models/gemini-2.0-flash:generateContent
+          G-->>S: JSON câu hỏi + lời giải
+          S-->>UI: parseQuizResponse(questions)
+          UI-->>U: Trắc nghiệm + giải thích
+        </div>
+      </div>
+
+      <div class="card span-4">
+        <h2>Công nghệ</h2>
+        <ul>
+          <li>React 18, Zustand, Tailwind CSS</li>
+          <li>Firebase: Auth, Firestore, Hosting</li>
+          <li>Google Gemini API (2.0 Flash)</li>
+          <li>CRA, ESLint, Prettier, Husky</li>
+        </ul>
+      </div>
+
+      <div class="card span-4">
+        <h2>Tính năng chính</h2>
+        <ul>
+          <li>AI Quiz (A1–C2), 7+ dạng: MCQ, Fill blank, TF, Matching, Ordering, Gap fill…</li>
+          <li>Flashcards + SM-2, thống kê tiến bộ</li>
+          <li>Sync đám mây & hoạt động offline</li>
+        </ul>
+      </div>
+
+      <div class="card span-4">
+        <h2>Bảo mật & dữ liệu</h2>
+        <ul>
+          <li>API Key lưu phía client (per-user)</li>
+          <li>Fallback LocalStorage khi Firestore không khả dụng</li>
+          <li>Clear/Export dữ liệu người dùng</li>
+        </ul>
+      </div>
+
+      <div class="card span-12">
+        <h2>Luồng: AI Vocabulary + Lưu trữ linh hoạt</h2>
+        <div class="mermaid">
+          sequenceDiagram
+          participant UI as AIMode
+          participant GS as geminiService
+          participant SS as storageService
+          participant FS as Firestore
+          participant LS as LocalStorage
+
+          UI->>GS: generateVocabulary(request, existingWords, apiKey)
+          GS-->>UI: words[] (JSON sạch)
+          UI->>SS: vocabulary.addMultiple(words)
+          alt backend == firestore & khả dụng
+          SS->>FS: Batch add
+          FS-->>SS: OK
+          else fallback local
+          SS->>LS: setVocabulary(updated)
+          end
+          SS-->>UI: newWords
+        </div>
+      </div>
+
+      <div class="card span-8">
+        <h2>Cấu trúc thư mục</h2>
+        <ul>
+          <li>features/ai • services/geminiService.js</li>
+          <li>features/quiz • services/quizGeneratorService.js</li>
+          <li>features/flashcard • study/manager/stats</li>
+          <li>features/vocab • firestoreService, initialVocabulary</li>
+          <li>shared/stores • UI/Data/Learning/Flashcard</li>
+          <li>shared/services • storageService, safeStorageService</li>
+        </ul>
+      </div>
+
+      <div class="card span-4">
+        <h2>Link & QR</h2>
+        <div>Demo: <a href="https://study-english-app-67fd9.web.app">study-english-app-67fd9.web.app</a></div>
+        <img alt="QR" width="140" height="140" style="margin-top:8px;border-radius:8px;border:1px solid #1e2b54"
+          src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fstudy-english-app-67fd9.web.app" />
+      </div>
+    </section>
+
+    <div class="footer">Cập nhật: 14/08/2025 — study-engliesh-gemini</div>
+  </main>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  </script>
+</body>
+
+</html>
