@@ -15,7 +15,7 @@ import NotificationToast from '../../../shared/ui/NotificationToast';
 const QuizGenerator = () => {
   // State management
   const [config, setConfig] = useState({
-    topic: '',
+    topic: 'present_tenses',
     level: 'B1',
     type: 'multiple_choice',
     count: 10,
@@ -77,7 +77,10 @@ const QuizGenerator = () => {
     });
 
     if (!apiKey) {
-      showNotification('Vui lòng thiết lập API Key trước', 'error');
+      showNotification('Chưa có API Key — dùng quiz mẫu để demo', 'error');
+      // Provide a local sample so the user still sees results
+      const sample = buildSampleQuiz(config);
+      setGeneratedQuiz(sample);
       return;
     }
 
@@ -107,10 +110,97 @@ const QuizGenerator = () => {
     } catch (error) {
       console.error('Quiz generation error:', error);
       showNotification(`Lỗi tạo quiz: ${error.message}`, 'error');
+
+      // Fallback: provide a sample quiz so user can still try the flow
+      try {
+        const sample = buildSampleQuiz(config);
+        setGeneratedQuiz(sample);
+      } catch (e) {
+        console.warn('Failed to build sample quiz:', e);
+      }
     } finally {
       setIsGenerating(false);
     }
   };
+
+  // Build a local sample quiz as fallback/demo
+  const buildSampleQuiz = cfg => ({
+    questions: [
+      {
+        id: 1,
+        type: 'multiple_choice',
+        question: "Choose the correct option: 'I have lived here ___ 2019.'",
+        options: ['for', 'since', 'during', 'from'],
+        correct_answer: 1,
+        explanation: "Use 'since' with a point in time.",
+        level: cfg.level,
+        skill: 'grammar',
+        points: 1,
+      },
+      {
+        id: 2,
+        type: 'fill_blank',
+        question: 'Complete the sentence',
+        sentence: 'She is very _____ at math.',
+        correct_answer: 'good',
+        acceptable_answers: ['good'],
+        explanation: "Common collocation: 'good at'",
+        level: cfg.level,
+        skill: 'vocabulary',
+        points: 1,
+      },
+      {
+        id: 3,
+        type: 'true_false',
+        question: 'Decide if the statement is true or false',
+        statement:
+          'The Present Perfect is used for actions at a specific time in the past.',
+        correct_answer: false,
+        explanation:
+          'Present Perfect connects past with present; specific past time uses Past Simple.',
+        level: cfg.level,
+        skill: 'grammar',
+        points: 1,
+      },
+      {
+        id: 4,
+        type: 'sentence_transformation',
+        question: 'Rewrite with the word given (do not change meaning).',
+        original_sentence: 'He started working here in 2020.',
+        key_word: 'FOR',
+        target_structure: 'He has worked here _____ three years.',
+        correct_answer: 'for',
+        full_answer: 'He has worked here for three years.',
+        explanation: 'Present Perfect with for + period of time.',
+        level: cfg.level,
+        skill: 'grammar',
+        points: 2,
+      },
+      {
+        id: 5,
+        type: 'multiple_choice',
+        question: "Pick the synonym of 'rapid'",
+        options: ['slow', 'quick', 'late', 'small'],
+        correct_answer: 1,
+        explanation: "'Rapid' ≈ 'quick'",
+        level: cfg.level,
+        skill: 'vocabulary',
+        points: 1,
+      },
+    ],
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      totalQuestions: 5,
+      questionTypes: [
+        'multiple_choice',
+        'fill_blank',
+        'true_false',
+        'sentence_transformation',
+      ],
+      levels: [cfg.level],
+      demo: true,
+    },
+  });
 
   const exportQuiz = (quiz, format = 'json') => {
     try {
@@ -355,7 +445,7 @@ const QuizGenerator = () => {
             {/* Generate Button */}
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !apiKey}
+              disabled={isGenerating}
               className='w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center'
             >
               {isGenerating ? (
@@ -440,6 +530,13 @@ const QuizGenerator = () => {
                   >
                     <Download size={16} className='mr-1' />
                     TXT
+                  </button>
+                  <button
+                    onClick={() => setGeneratedQuiz(buildSampleQuiz(config))}
+                    className='px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 flex items-center'
+                    title='Dùng quiz mẫu (không cần API)'
+                  >
+                    Demo
                   </button>
                 </div>
               </div>
@@ -581,6 +678,15 @@ const QuizGenerator = () => {
               <p className='text-gray-500'>
                 Cấu hình các tùy chọn bên trái và nhấn "Tạo Quiz" để bắt đầu
               </p>
+              <div className='mt-6'>
+                <button
+                  onClick={() => setGeneratedQuiz(buildSampleQuiz(config))}
+                  className='inline-flex items-center px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800'
+                  title='Dùng quiz mẫu (không cần API)'
+                >
+                  Dùng quiz mẫu
+                </button>
+              </div>
             </div>
           )}
         </div>
