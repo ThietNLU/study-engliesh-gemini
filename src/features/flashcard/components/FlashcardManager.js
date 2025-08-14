@@ -15,7 +15,6 @@ const FlashcardManager = () => {
     setFilters,
     getFilteredCards,
     importCards,
-    exportCards,
     clearAllCards,
     setLoading,
   } = useFlashcardStore();
@@ -110,7 +109,7 @@ const FlashcardManager = () => {
       }
 
       if (cardsToImport.length > 0) {
-        const addedCards = await flashcardService.addMultiple(cardsToImport);
+        await flashcardService.addMultiple(cardsToImport);
         const importedCount = importCards(cardsToImport);
         setShowImportModal(false);
         setImportText('');

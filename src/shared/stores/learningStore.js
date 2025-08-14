@@ -128,7 +128,7 @@ export const useLearningStore = create(
       scheduleReview: (wordId, stage = 'new') => {
         const { reviewSchedule, learningStage } = get();
         const now = new Date();
-        let nextReview = new Date(now);
+        const nextReview = new Date(now);
 
         // Spaced repetition intervals (in days)
         const intervals = {
@@ -197,7 +197,6 @@ export const useLearningStore = create(
           wordsLearned,
           sessionsCompleted,
         } = get();
-        const today = new Date().toDateString();
         const thisWeek = studyHistory.filter(session => {
           const sessionDate = new Date(session.date);
           const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

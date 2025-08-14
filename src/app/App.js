@@ -17,23 +17,10 @@ import {
 import { AIMode, geminiService } from '../features/ai';
 
 // Shared imports
-import {
-  Header,
-  HomePage,
-  ModeSelector,
-  Footer,
-  EmptyState,
-  checkDuplicate,
-  filterVocabulary,
-} from '../shared';
+import { Header, HomePage, ModeSelector, Footer, EmptyState } from '../shared';
 
 // Store imports
-import {
-  useLearningStore,
-  useUIStore,
-  useDataStore,
-  useFlashcardStore,
-} from '../shared/stores';
+import { useLearningStore, useUIStore, useDataStore } from '../shared/stores';
 
 // New components
 import NotificationToast from '../shared/ui/NotificationToast';
@@ -64,7 +51,6 @@ const EnglishVocabApp = () => {
     setNewWord,
     setAccent,
     showNotification,
-    setLoading,
   } = uiStore;
 
   const {
@@ -74,14 +60,14 @@ const EnglishVocabApp = () => {
     userAnswer,
     quizType,
     setScore,
-    setCurrentCard,
+    // setCurrentCard,
     setShowAnswer,
     setUserAnswer,
     setQuizType,
     nextCard,
-    prevCard,
+    // prevCard,
     resetQuiz,
-    startStudySession,
+    // startStudySession,
   } = learningStore;
 
   const {
@@ -117,46 +103,6 @@ const EnglishVocabApp = () => {
   }, [vocabulary.length, currentMode]);
 
   // Event handlers
-  const addNewWord = () => {
-    if (!newWord.english.trim() || !newWord.vietnamese.trim()) {
-      showNotification(
-        'warning',
-        'Hãy nhập ít nhất từ tiếng Anh và nghĩa tiếng Việt'
-      );
-      return;
-    }
-
-    const existingWord = checkDuplicate(vocabulary, newWord.english);
-    if (existingWord) {
-      alert(`Từ "${newWord.english}" đã tồn tại trong cơ sở dữ liệu!`);
-      return;
-    }
-
-    const wordToAdd = {
-      ...newWord,
-      english: newWord.english.trim(),
-      vietnamese: newWord.vietnamese.trim(),
-    };
-
-    addWord(wordToAdd);
-    setNewWord({
-      english: '',
-      vietnamese: '',
-      pronunciation_us: '',
-      pronunciation_uk: '',
-      category: 'nouns',
-      definition: '',
-      example: '',
-      level: 'A1',
-    });
-
-    // If this was the first word, switch to home mode to show the vocabulary
-    if (vocabulary.length === 0) {
-      setCurrentMode('home');
-    }
-
-    showNotification('success', 'Đã thêm từ mới thành công!');
-  };
 
   const checkAnswer = () => {
     const currentWord = vocabulary[currentCard];

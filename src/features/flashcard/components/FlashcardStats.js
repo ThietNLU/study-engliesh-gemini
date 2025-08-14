@@ -3,7 +3,7 @@ import useFlashcardStore from '../../../shared/stores/flashcardStore';
 import { reviewService, sessionService } from '../services/flashcardService';
 
 const FlashcardStats = () => {
-  const { cards, getCardStats } = useFlashcardStore();
+  const { getCardStats } = useFlashcardStore();
   const [reviewStats, setReviewStats] = useState(null);
   const [recentSessions, setRecentSessions] = useState([]);
   const [dateRange, setDateRange] = useState('week'); // week, month, year
@@ -18,7 +18,7 @@ const FlashcardStats = () => {
     setIsLoading(true);
     try {
       const endDate = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       switch (dateRange) {
         case 'week':
