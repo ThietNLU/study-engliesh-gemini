@@ -7,7 +7,69 @@ AI Quiz Generator là một hệ thống tạo bài quiz thông minh sử dụng
 ## Features
 
 ### 1. Quiz Generation
-- **Multiple Question Types**: Hỗ trợ 7 dạng câu hỏi khác nhau
+- **Multiple Question Types**: Hỗ trợ 7 dạn### Error Handling
+
+### API Errors
+- **Netw### Storage
+
+### Local Storage
+- **Quiz library persistence**: Saved quizzes in localStorage as `savedQuizzes`
+- **Results history tracking**: Quiz completion results and scores
+- **Configuration preferences**: User settings and default configurations
+- **Export/import capabilities**: JSON/TXT format support
+
+### Data Structure
+```javascript
+// localStorage keys used
+{
+  savedQuizzes: [],        // Generated quizzes array
+  quizResults: [],         // Quiz completion results
+  preferences: {},         // User configuration settings
+  apiKey: ''              // Encrypted API key storage
+}
+
+// Quiz object structure
+{
+  id: 'unique_id',
+  title: 'Quiz Title',
+  topic: 'present_tenses', 
+  level: 'B1',
+  type: 'multiple_choice',
+  questions: [...],
+  createdAt: 'timestamp',
+  totalQuestions: 10,
+  estimatedTime: 15
+}
+```ling**: Detect fetch failures and network issues
+- **Invalid API key detection**: Check for authentication errors
+- **Rate limit management**: Handle 429 responses gracefully
+- **Model-specific errors**: Handle unsupported safety settings
+- **Graceful error messages**: User-friendly Vietnamese error messages
+
+### Data Validation
+- **JSON parsing validation**: Robust parsing with cleanup and format fixing
+- **Required field checking**: Validate all mandatory quiz fields
+- **Type-specific validation**: Ensure arrays for matching/ordering types
+- **Fallback for malformed data**: Automatic JSON format correction
+- **Response structure validation**: Verify candidates and content structure
+
+### Common Error Types
+```javascript
+// Network errors
+throw new Error('Không thể kết nối với Gemini API. Kiểm tra kết nối internet');
+
+// API key errors  
+throw new Error('Vui lòng nhập API Key của Gemini');
+
+// Configuration errors
+throw new Error('Level phải là một trong: A1, A2, B1, B2, C1, C2');
+
+// JSON parsing errors
+throw new Error('Không thể phân tích JSON từ AI: ${error.message}');
+
+// Data validation errors
+throw new Error('Format dữ liệu từ AI không đúng - không tìm thấy mảng questions');
+```c nhau
 - **Smart Prompting**: Sử dụng system instruction và prompt engineering
 - **CEFR Level Support**: Từ A1 đến C2
 - **Topic Variety**: Grammar, vocabulary, và theme-based topics
@@ -18,36 +80,43 @@ AI Quiz Generator là một hệ thống tạo bài quiz thông minh sử dụng
 - 4 lựa chọn A, B, C, D
 - Một đáp án đúng duy nhất
 - Distractors hợp lý
+- **ID**: `multiple_choice`
 
 #### Fill in the Blank
 - Điền từ vào chỗ trống
 - Hỗ trợ nhiều đáp án chấp nhận được
 - Context clues rõ ràng
+- **ID**: `fill_blank`
 
 #### Sentence Transformation
 - Viết lại câu với từ gợi ý
 - Giữ nguyên nghĩa gốc
 - Test grammar patterns
+- **ID**: `sentence_transformation`
 
 #### True/False
 - Xác định câu đúng/sai
 - Giải thích chi tiết
 - Test language concepts
+- **ID**: `true_false`
 
 #### Matching
 - Nối từ với nghĩa
 - Words/definitions pairing
 - Logical grouping
+- **ID**: `matching`
 
-#### Word Ordering
+#### Word Ordering (Ordering)
 - Sắp xếp từ thành câu
 - Test sentence structure
 - Grammar pattern recognition
+- **ID**: `ordering`
 
 #### Gap Fill
 - Điền nhiều từ vào đoạn văn
 - Coherent text passages
 - Multiple related blanks
+- **ID**: `gap_fill`
 
 ### 3. Topic Categories
 
@@ -132,6 +201,9 @@ OUTPUT FORMAT:
 }
 ```
 
+**Model Used**: `gemini-2.0-flash`  
+**API Endpoint**: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`
+
 ### JSON Schema Examples
 
 #### Multiple Choice
@@ -168,6 +240,41 @@ OUTPUT FORMAT:
       "level": "A2",
       "skill": "vocabulary",
       "points": 1
+    }
+  ]
+}
+```
+
+#### Gap Fill
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "type": "gap_fill",
+      "question": "Fill in the gaps in the passage:",
+      "passage": "The _____ was very _____ yesterday. Many people _____ to the beach.",
+      "gaps": [
+        {
+          "position": 1,
+          "correct_answer": "weather",
+          "acceptable_answers": ["weather", "day"]
+        },
+        {
+          "position": 2,
+          "correct_answer": "sunny",
+          "acceptable_answers": ["sunny", "hot", "warm"]
+        },
+        {
+          "position": 3,
+          "correct_answer": "went",
+          "acceptable_answers": ["went", "traveled"]
+        }
+      ],
+      "explanation": "Past tense and weather vocabulary in context.",
+      "level": "A2",
+      "skill": "vocabulary",
+      "points": 3
     }
   ]
 }
@@ -310,18 +417,46 @@ Generates quiz using Gemini AI
 
 **Parameters:**
 - `config`: Quiz configuration object
-- `apiKey`: Gemini API key
+  - `topic` (string): Topic ID or custom topic
+  - `level` (string): CEFR level (A1-C2)
+  - `type` (string): Question type ID
+  - `count` (number): Number of questions (5-50)
+  - `focus` (string): Optional specific focus area
+  - `vocabulary` (array): Optional existing vocabulary
+- `apiKey` (string): Gemini API key
 
-**Returns:** Promise resolving to quiz data
+**Returns:** Promise resolving to quiz data object
 
 #### getQuestionTypes()
-Returns available question types
+Returns available question types with metadata
+
+**Returns:** Array of question type objects with `id`, `name`, `description`, `icon`
 
 #### getTopics()
 Returns predefined topic categories
 
+**Returns:** Array of topic objects with `id`, `name`, `category`, `description`
+
 #### getLevels()
 Returns CEFR level definitions
+
+**Returns:** Array of level objects with `id`, `name`, `description`
+
+#### validateConfig(config)
+Validates quiz configuration object
+
+**Parameters:**
+- `config`: Configuration to validate
+
+**Throws:** Error if invalid configuration
+
+#### parseQuizResponse(aiText)
+Parses and validates AI response text
+
+**Parameters:**
+- `aiText`: Raw AI response text
+
+**Returns:** Parsed and validated quiz questions array
 
 ## Troubleshooting
 
