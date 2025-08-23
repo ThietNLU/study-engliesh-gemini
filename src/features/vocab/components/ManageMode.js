@@ -15,6 +15,7 @@ const ManageMode = ({
   toggleFavorite,
   deleteWord,
   accent,
+  selectedVoice,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -156,7 +157,7 @@ const ManageMode = ({
                       {word.level}
                     </span>
                     <button
-                      onClick={() => speak(word.english, accent)}
+                      onClick={() => speak(word.english, accent, selectedVoice)}
                       className='text-indigo-600 hover:text-indigo-800'
                     >
                       <Volume2 className='w-4 h-4 inline mr-1' />

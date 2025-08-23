@@ -1,34 +1,25 @@
 import React, { useEffect } from 'react';
 
 // Feature imports
-import {
-  StudyMode,
-  FlashcardMode,
-  FlashcardManager,
-  FlashcardStats,
-} from '../features/flashcard';
-import { QuizMode, QuizModeAdvanced } from '../features/quiz';
-import {
-  AddWordMode,
-  ManageMode,
-  DatabaseManager,
-  Statistics,
-} from '../features/vocab';
+import { AddWordMode, ManageMode } from '../features/vocab';
 import { AIMode, geminiService } from '../features/ai';
+import DictionaryMode from '../features/dictionary/components/DictionaryMode';
 
-// Shared imports
-import { Header, HomePage, ModeSelector, Footer, EmptyState } from '../shared';
-
-// Store imports
-import { useLearningStore, useUIStore, useDataStore } from '../shared/stores';
-
-// New components
+// Shared imports - import individually to debug
+import Header from '../shared/ui/Header';
+import HomePage from '../shared/ui/HomePage';
+import ModeSelector from '../shared/ui/ModeSelector';
+import Footer from '../shared/ui/Footer';
+import EmptyState from '../shared/ui/EmptyState';
+// Simplified: remove voice settings UI
 import NotificationToast from '../shared/ui/NotificationToast';
 import ConfirmDialog from '../shared/ui/ConfirmDialog';
 
+// Store imports
+import { useUIStore, useDataStore } from '../shared/stores';
+
 const EnglishVocabApp = () => {
   // Zustand stores
-  const learningStore = useLearningStore();
   const uiStore = useUIStore();
   const dataStore = useDataStore();
 
@@ -41,7 +32,6 @@ const EnglishVocabApp = () => {
     isLoading,
     showApiSettings,
     newWord,
-    accent,
     setCurrentMode,
     setEditingWord,
     setSearchTerm,
@@ -49,26 +39,8 @@ const EnglishVocabApp = () => {
     setIsLoading,
     setShowApiSettings,
     setNewWord,
-    setAccent,
     showNotification,
   } = uiStore;
-
-  const {
-    score,
-    currentCard,
-    showAnswer,
-    userAnswer,
-    quizType,
-    setScore,
-    // setCurrentCard,
-    setShowAnswer,
-    setUserAnswer,
-    setQuizType,
-    nextCard,
-    // prevCard,
-    resetQuiz,
-    // startStudySession,
-  } = learningStore;
 
   const {
     vocabulary,
@@ -78,7 +50,6 @@ const EnglishVocabApp = () => {
     updateWord,
     deleteWord,
     addWordsFromAI,
-    refreshVocabulary,
     toggleFavorite,
     setApiKey,
     initializeData,
@@ -88,6 +59,7 @@ const EnglishVocabApp = () => {
   // Initialize data on app load
   useEffect(() => {
     initializeData();
+    uiStore.initializeVoiceSettings();
   }, [initializeData]);
 
   // Watch vocabulary changes and reset to home when it becomes empty
@@ -100,36 +72,11 @@ const EnglishVocabApp = () => {
     ) {
       setCurrentMode('home');
     }
-  }, [vocabulary.length, currentMode]);
+  }, [vocabulary.length, currentMode, setCurrentMode]);
 
   // Event handlers
 
-  const checkAnswer = () => {
-    const currentWord = vocabulary[currentCard];
-    const isCorrect =
-      quizType === 'meaning'
-        ? userAnswer
-            .toLowerCase()
-            .includes(currentWord.vietnamese.toLowerCase()) ||
-          currentWord.vietnamese
-            .toLowerCase()
-            .includes(userAnswer.toLowerCase())
-        : userAnswer
-            .toLowerCase()
-            .includes(currentWord.english.toLowerCase()) ||
-          currentWord.english.toLowerCase().includes(userAnswer.toLowerCase());
-
-    setScore({
-      correct: score.correct + (isCorrect ? 1 : 0),
-      total: score.total + 1,
-    });
-    setShowAnswer(true);
-
-    // Update learning progress
-    if (currentWord) {
-      learningStore.updateWordProgress(currentWord.id, isCorrect);
-    }
-  };
+  // Quiz removed in streamlined version
 
   const generateVocabularyWithAI = async () => {
     setIsLoading(true);
@@ -176,7 +123,7 @@ const EnglishVocabApp = () => {
   };
 
   // Computed values
-  const currentWord = vocabulary[currentCard];
+  const currentWord = vocabulary.length > 0 ? vocabulary[0] : null; // simplified: first word
   const filteredVocabulary = getFilteredVocabulary(searchTerm);
 
   // Handle word operations with notifications
@@ -214,114 +161,114 @@ const EnglishVocabApp = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <Header accent={accent} setAccent={setAccent} />
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 relative'>
+      {/* Background decorative elements */}
+      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+        <div className='absolute -top-40 -right-40 w-80 h-80 bg-purple-300/20 rounded-full blur-3xl'></div>
+        <div className='absolute top-1/2 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl'></div>
+        <div className='absolute -bottom-40 right-1/4 w-80 h-80 bg-indigo-300/20 rounded-full blur-3xl'></div>
+      </div>
+
+      <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6'>
+        <Header />
 
         <ModeSelector
           currentMode={currentMode}
           setCurrentMode={setCurrentMode}
-          resetQuiz={() => resetQuiz()}
         />
 
-        {/* Home Page */}
-        {currentMode === 'home' && (
-          <HomePage
-            vocabulary={vocabulary}
-            favorites={favorites}
-            setCurrentMode={setCurrentMode}
-            score={score}
-            currentWord={currentWord}
-          />
-        )}
+        {/* Main Content */}
+        <main className='relative z-10'>
+          {/* Home Page */}
+          {currentMode === 'home' && (
+            <HomePage
+              vocabulary={vocabulary}
+              favorites={favorites}
+              setCurrentMode={setCurrentMode}
+              currentWord={currentWord}
+            />
+          )}
 
-        {/* Study Mode */}
-        {currentMode === 'study' && <StudyMode />}
+          {/* Add New Word Mode */}
+          {currentMode === 'add' && (
+            <div className='animate-fadeInUp'>
+              <AddWordMode
+                newWord={newWord}
+                setNewWord={setNewWord}
+                addNewWord={handleAddWord}
+              />
+            </div>
+          )}
 
-        {/* Flashcard Study Mode */}
-        {currentMode === 'flashcard' && <FlashcardMode />}
+          {/* AI Generate Words Mode */}
+          {currentMode === 'ai' && (
+            <div className='animate-fadeInUp'>
+              <AIMode
+                aiRequest={aiRequest}
+                setAiRequest={setAiRequest}
+                apiKey={apiKey}
+                setApiKey={setApiKey}
+                showApiSettings={showApiSettings}
+                setShowApiSettings={setShowApiSettings}
+                isLoading={isLoading}
+                generateVocabularyWithAI={generateVocabularyWithAI}
+                vocabulary={vocabulary}
+              />
+            </div>
+          )}
 
-        {/* Flashcard Manager Mode */}
-        {currentMode === 'flashcard-manager' && <FlashcardManager />}
+          {/* Manage Words Mode */}
+          {currentMode === 'manage' && (
+            <div className='animate-fadeInUp'>
+              <ManageMode
+                filteredVocabulary={filteredVocabulary}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                editingWord={editingWord}
+                setEditingWord={setEditingWord}
+                vocabulary={vocabulary}
+                updateWord={updateWord}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                deleteWord={handleDeleteWord}
+              />
+            </div>
+          )}
 
-        {/* Flashcard Statistics Mode */}
-        {currentMode === 'flashcard-stats' && <FlashcardStats />}
-
-        {/* Quiz Mode */}
-        {currentMode === 'quiz' && (
-          <QuizMode
-            currentWord={currentWord}
-            quizType={quizType}
-            setQuizType={setQuizType}
-            score={score}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            showAnswer={showAnswer}
-            checkAnswer={checkAnswer}
-            nextCard={() => nextCard(vocabulary.length)}
-            accent={accent}
-          />
-        )}
-
-        {/* AI Quiz Generator Mode */}
-        {currentMode === 'ai-quiz' && <QuizModeAdvanced />}
-
-        {/* Add New Word Mode */}
-        {currentMode === 'add' && (
-          <AddWordMode
-            newWord={newWord}
-            setNewWord={setNewWord}
-            addNewWord={handleAddWord}
-          />
-        )}
-
-        {/* AI Generate Words Mode */}
-        {currentMode === 'ai' && (
-          <AIMode
-            aiRequest={aiRequest}
-            setAiRequest={setAiRequest}
-            apiKey={apiKey}
-            setApiKey={setApiKey}
-            showApiSettings={showApiSettings}
-            setShowApiSettings={setShowApiSettings}
-            isLoading={isLoading}
-            generateVocabularyWithAI={generateVocabularyWithAI}
-            vocabulary={vocabulary}
-          />
-        )}
-
-        {/* Manage Words Mode */}
-        {currentMode === 'manage' && (
-          <ManageMode
-            filteredVocabulary={filteredVocabulary}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            editingWord={editingWord}
-            setEditingWord={setEditingWord}
-            vocabulary={vocabulary}
-            updateWord={updateWord}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-            deleteWord={handleDeleteWord}
-            accent={accent}
-          />
-        )}
-
-        {/* Database Manager Mode */}
-        {currentMode === 'database' && (
-          <DatabaseManager onDataCleared={refreshVocabulary} />
-        )}
-
-        {/* Statistics - Only show on non-home pages */}
-        {currentMode !== 'home' && currentMode !== 'database' && (
-          <Statistics vocabulary={vocabulary} favorites={favorites} />
-        )}
+          {/* Dictionary (AI) */}
+          {currentMode === 'dictionary' && (
+            <div className='animate-fadeInUp'>
+              <DictionaryMode
+                apiKey={apiKey}
+                setApiKey={setApiKey}
+                showNotification={showNotification}
+              />
+            </div>
+          )}
+        </main>
 
         <Footer />
 
         {/* Global UI Components */}
         <NotificationToast />
         <ConfirmDialog />
+
+        {/* Loading overlay */}
+        {isLoading && (
+          <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50'>
+            <div className='bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4'>
+              <div className='w-12 h-12 mx-auto mb-4 relative'>
+                <div className='w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin'></div>
+              </div>
+              <h3 className='text-lg font-semibold text-gray-800 mb-2'>
+                Đang xử lý...
+              </h3>
+              <p className='text-sm text-gray-600'>
+                Vui lòng chờ trong giây lát
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ export { default as FirebaseStatus } from './ui/FirebaseStatus';
 export { default as DetailedDebugger } from './ui/DetailedDebugger';
 export { default as NotificationToast } from './ui/NotificationToast';
 export { default as ConfirmDialog } from './ui/ConfirmDialog';
+export { default as VoiceSettings } from './ui/VoiceSettings';
 
 // Shared hooks
 export { useApiKey } from './hooks/useApiKey';

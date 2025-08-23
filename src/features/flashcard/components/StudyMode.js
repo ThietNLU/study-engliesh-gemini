@@ -10,7 +10,7 @@ import {
 const StudyMode = () => {
   // Use stores instead of props
   const { currentCard, startStudySession } = useLearningStore();
-  const { accent } = useUIStore();
+  const { accent, selectedVoice } = useUIStore();
   const { vocabulary, favorites, toggleFavorite } = useDataStore();
 
   // Get current word from vocabulary
@@ -112,7 +112,7 @@ const StudyMode = () => {
             </h3>
             <p className='text-gray-800 italic'>"{currentWord.example}"</p>
             <button
-              onClick={() => speak(currentWord.example, accent)}
+              onClick={() => speak(currentWord.example, accent, selectedVoice)}
               className='mt-2 text-purple-600 hover:text-purple-800 text-sm'
             >
               <Volume2 className='inline w-3 h-3 mr-1' />

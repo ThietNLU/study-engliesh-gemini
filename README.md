@@ -1,124 +1,109 @@
-# Study English with AI - Smart Vocabulary & Quiz System
+# Study English (AI Vocabulary App)
 
-🚀 **Live Demo**: [https://study-english-app-67fd9.web.app](https://study-english-app-67fd9.web.app)
+Ứng dụng web học từ vựng tiếng Anh tích hợp AI Gemini để tự động tạo danh sách từ theo yêu cầu người học. Dữ liệu được lưu cục bộ (localStorage) + tùy chọn Firebase (Firestore/Auth) cho mở rộng về sau.
 
-A modern English learning platform powered by AI, featuring intelligent flashcards with spaced repetition and an AI-powered quiz generator using Google Gemini.
+## 🚀 Chức năng chính
+- Thêm từ vựng thủ công (English / Vietnamese / IPA US-UK / ví dụ / định nghĩa / cấp độ / phân loại)
+- Sinh từ vựng tự động bằng Gemini AI theo prompt người dùng, tránh trùng lặp từ đã có
+- Quản lý & chỉnh sửa từ: tìm kiếm, sửa, xóa, gắn yêu thích (favorite)
+- Đánh dấu yêu thích bằng Set tối ưu
+- Thống kê nhanh: tổng số từ, phân bố theo category & level
+- Từ điển (Dictionary Mode) dùng AI để tra cứu / giải thích nhanh
+- Lưu & tự khởi tạo dữ liệu mẫu lần đầu dùng (seed `initialVocabulary`)
+- Thông báo (toast) & hộp thoại xác nhận hành động
+- Tổ chức code module hóa theo feature + Zustand store
 
-## ✨ Key Features
+## 🧱 Kiến trúc & Công nghệ
+| Layer | Chi tiết |
+|-------|---------|
+| UI | React 18, chức năng theo `mode` (home, add, ai, manage, dictionary) |
+| State | Zustand stores: `dataStore`, `uiStore` (đã lược bỏ learning/flashcard) |
+| AI | `geminiService` gọi Gemini (cần API Key) + lọc từ trùng |
+| Lưu trữ cục bộ | `storageService` + namespace (vocabulary, favorites, settings, migration) |
+| Firebase (chuẩn bị) | `firebase.js` cấu hình sẵn – có thể thay bằng project riêng |
+| Styling | TailwindCSS 3 + gradient nền |
+| Tooling | ESLint + Prettier + Husky + lint-staged |
 
-### 🎯 AI Quiz Generator
-- **7 Question Types**: Multiple choice, Fill blanks, Sentence transformation, True/false, Matching, Word ordering, Gap fill
-- **CEFR Levels**: A1 (Beginner) to C2 (Proficient) 
-- **Smart Topics**: Grammar, Vocabulary, Business English, Travel, Technology, and more
-- **Powered by Gemini AI**: Advanced prompt engineering for high-quality questions
-
-### 📚 Smart Flashcard System
-- **Spaced Repetition (SM-2)**: Industry-standard algorithm like Anki
-- **4-Level Rating**: Again/Hard/Good/Easy for optimal learning
-- **Progress Tracking**: Detailed statistics and learning analytics
-- **Import/Export**: Support for CSV, Anki formats, and vocabulary lists
-
-### 💾 Cloud Integration
-- **Firebase Firestore**: Real-time data synchronization
-- **User Authentication**: Secure personal learning progress
-- **Cross-device Sync**: Access your progress anywhere
-
-## 🛠 Technology Stack
-
-- **Frontend**: React 18, Zustand (State Management), Tailwind CSS
-- **Backend**: Firebase (Authentication, Firestore, Hosting)
-- **AI Integration**: Google Gemini API
-- **Build Tools**: Create React App, ESLint, Prettier
-
-## 📖 Documentation
-
-- [AI Quiz Generator Guide](AI_QUIZ_GENERATOR.md) - Complete AI quiz features documentation
-- [Flashcard System Guide](FLASHCARD_SYSTEM.md) - Spaced repetition and flashcard features
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 16+ 
-- Firebase project with Firestore enabled
-- Google Gemini API key
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/ThietNLU/study-engliesh-gemini.git
-cd study-engliesh-gemini
+## � Cấu trúc thư mục chính
+```
+src/
+	app/          # App root
+	features/
+		ai/         # AIMode + geminiService
+		vocab/      # Add/Manage + hooks + initialVocabulary seed
+		dictionary/ # DictionaryMode (AI tra cứu)
+		flashcard/  # (đã gỡ bỏ)
+		quiz/       # (đã gỡ bỏ)
+	shared/
+		stores/     # Zustand stores
+		services/   # storage + safeStorage
+		ui/         # Header, Footer, Toast, Dialog, ...
+		config/     # firebase config
+		utils/      # helper & migration utils
 ```
 
-2. **Install dependencies**
+## 🔑 Yêu cầu môi trường
+- Node.js >= 18
+- NPM >= 9
+- (Tùy chọn) Firebase project nếu muốn đồng bộ backend
+- API Key Gemini để sinh từ vựng / tra cứu nâng cao
+
+## 📦 Cài đặt & Chạy
 ```bash
 npm install
+npm run start        # Chạy dev
+npm run build        # Build production
+npm run deploy       # Build + Firebase deploy (cần cấu hình firebase.json & login)
 ```
 
-3. **Configure environment variables**
-Create `.env` file:
-```env
-REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
-REACT_APP_FIREBASE_APP_ID=your_app_id
-```
+## 🤖 Cấu hình API Key Gemini
+Trong ứng dụng: vào AI Mode -> nhập API Key -> lưu. Key lưu trong storage an toàn (safeStorage nếu hỗ trợ, fallback localStorage) qua `storageService.settings`.
 
-4. **Start development server**
-```bash
-npm start
-```
+## 🧠 Sinh từ vựng bằng AI
+`geminiService.generateVocabulary(prompt, existingWords, apiKey)`:
+1. Gửi prompt người dùng
+2. Nhận danh sách đề xuất
+3. Lọc bỏ từ trùng (case-insensitive)
+4. Chuẩn hoá đối tượng từ vựng
 
-5. **Build for production**
-```bash
-npm run build
-```
+## �️ Lưu trữ nội bộ
+- Lần đầu: kiểm tra migration flag -> nếu mới, nạp `initialVocabulary`
+- CRUD qua `storageService.vocabulary`
+- Favorites: Set<ID> để toggle nhanh
 
-## 🎓 How to Use
+## 🧪 Scripts tiện ích
+| Lệnh | Mục đích |
+|------|----------|
+| `npm run lint` | Kiểm tra lint |
+| `npm run lint:fix` | Sửa tự động |
+| `npm run format` | Format mã nguồn |
+| `npm run format:check` | Kiểm tra định dạng |
 
-### AI Quiz Generator
-1. Navigate to **AI Quiz** mode
-2. Select your English level (A1-C2)
-3. Choose question types and topics
-4. Generate custom quizzes instantly
-5. Practice with intelligent feedback
+## 🔐 Firebase
+File `src/shared/config/firebase.js` chứa config mẫu – thay bằng config của bạn nếu triển khai thực. Khuyên chuyển sang `.env` khi public.
 
-### Flashcard Learning
-1. Go to **Add Words** to create vocabulary cards
-2. Use **Study Mode** for spaced repetition practice
-3. Rate your performance: Again/Hard/Good/Easy
-4. Track progress in **Statistics** dashboard
-5. Import/export your word lists
+## 🛡️ Bảo mật
+- Không commit API Key thật
+- Dùng `.env.local` với `REACT_APP_GEMINI_KEY=...`
+- Có thể mã hoá nhẹ trước khi lưu (tùy chọn)
 
-## 📊 Learning Analytics
+## 📈 Mở rộng tương lai
+-- (Tùy chọn tương lai) Có thể bổ sung lại Flashcard / Quiz nếu cần
+- Đồng bộ Firestore đa thiết bị
+- Export / Import (JSON/CSV)
+- Dark mode & i18n
+- Analytics tiến độ học
 
-- **Review Statistics**: Track daily/weekly/monthly progress
-- **Retention Rates**: Monitor learning effectiveness  
-- **Study Streaks**: Build consistent learning habits
-- **Performance Insights**: Identify strengths and areas for improvement
+## ❓ Khắc phục sự cố
+| Vấn đề | Cách xử lý |
+|--------|-----------|
+| Không sinh được từ | Kiểm tra API Key & mạng; xem console log |
+| Dữ liệu biến mất | Kiểm tra localStorage / clearAllData đã gọi chưa |
+| Build fail | `npm install` lại + `npm run lint:fix` |
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Google Gemini AI** for intelligent quiz generation
-- **Firebase** for robust backend infrastructure
-- **SM-2 Algorithm** for effective spaced repetition
-- **React Community** for excellent development tools
+## 📜 License
+MIT
 
 ---
-
-**Made with ❤️ for English learners worldwide**
+Made with ❤️ để hỗ trợ học từ vựng hiệu quả hơn bằng AI.
 

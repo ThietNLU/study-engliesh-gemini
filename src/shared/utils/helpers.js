@@ -1,9 +1,86 @@
+// Helper function to find best voice for accent
+const findBestVoiceForAccent = (accent, selectedVoice) => {
+  const voices = speechSynthesis.getVoices();
+
+  // If selectedVoice matches the requested accent, use it
+  if (
+    selectedVoice &&
+    selectedVoice.lang &&
+    ((accent === 'us' &&
+      (selectedVoice.lang.includes('US') || selectedVoice.lang === 'en-US')) ||
+      (accent === 'uk' &&
+        (selectedVoice.lang.includes('GB') || selectedVoice.lang === 'en-GB')))
+  ) {
+    return selectedVoice;
+  }
+
+  // Otherwise, find the best voice for the requested accent
+  let preferredVoices;
+  if (accent === 'us') {
+    // Prioritize US voices
+    preferredVoices = voices.filter(
+      voice =>
+        voice.lang === 'en-US' ||
+        voice.lang.includes('US') ||
+        (voice.lang.startsWith('en') && voice.name.toLowerCase().includes('us'))
+    );
+  } else {
+    // Prioritize UK/GB voices
+    preferredVoices = voices.filter(
+      voice =>
+        voice.lang === 'en-GB' ||
+        voice.lang.includes('GB') ||
+        voice.lang.includes('UK') ||
+        (voice.lang.startsWith('en') &&
+          voice.name.toLowerCase().includes('british'))
+    );
+  }
+
+  // Sort by preference: local service first, then by quality indicators
+  preferredVoices.sort((a, b) => {
+    // Prefer local voices
+    if (a.localService && !b.localService) return -1;
+    if (!a.localService && b.localService) return 1;
+
+    // Prefer default voices
+    if (a.default && !b.default) return -1;
+    if (!a.default && b.default) return 1;
+
+    return 0;
+  });
+
+  // Return first available voice, or null if none found
+  return preferredVoices.length > 0 ? preferredVoices[0] : null;
+};
+
 // Speech synthesis utility
-export const speak = (text, accent = 'us') => {
+export const speak = (text, accent = 'us', selectedVoice = null) => {
   if ('speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = accent === 'us' ? 'en-US' : 'en-GB';
+
+    // Try to find the best voice for the requested accent
+    const bestVoice = findBestVoiceForAccent(accent, selectedVoice);
+
+    if (
+      bestVoice &&
+      typeof bestVoice === 'object' &&
+      bestVoice.name &&
+      bestVoice.lang &&
+      bestVoice.voiceURI
+    ) {
+      // Use the best voice found
+      utterance.voice = bestVoice;
+    } else {
+      // Fallback to language setting
+      utterance.lang = accent === 'us' ? 'en-US' : 'en-GB';
+    }
+
     utterance.rate = 0.8;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    // Stop current speech before starting new one
+    speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   }
 };

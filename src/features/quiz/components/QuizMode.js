@@ -13,6 +13,7 @@ const QuizMode = ({
   checkAnswer,
   nextCard,
   accent,
+  selectedVoice,
 }) => {
   if (!currentWord) return null;
 
@@ -68,7 +69,9 @@ const QuizMode = ({
                 {currentWord.english}
               </h2>
               <button
-                onClick={() => speak(currentWord.english, accent)}
+                onClick={() =>
+                  speak(currentWord.english, accent, selectedVoice)
+                }
                 className='bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-all mb-4'
               >
                 <Volume2 className='inline w-4 h-4 mr-2' />

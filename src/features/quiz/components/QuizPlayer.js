@@ -12,8 +12,12 @@ import {
   Volume2,
 } from 'lucide-react';
 import { speak } from '../../../shared/utils/helpers';
+import { useUIStore } from '../../../shared/stores';
 
 const QuizPlayer = ({ quiz, onComplete, onExit }) => {
+  // Get voice settings from store
+  const { accent, selectedVoice } = useUIStore();
+
   // State management
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -316,7 +320,9 @@ const QuizPlayer = ({ quiz, onComplete, onExit }) => {
               </h2>
               {currentQuestion.sentence && (
                 <button
-                  onClick={() => speak(currentQuestion.sentence)}
+                  onClick={() =>
+                    speak(currentQuestion.sentence, accent, selectedVoice)
+                  }
                   className='ml-4 p-2 text-blue-600 hover:bg-blue-50 rounded-lg'
                 >
                   <Volume2 size={20} />
